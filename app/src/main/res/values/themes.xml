@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. M3 là bắt buộc. -->
+    <style name="Theme.StudentForum" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Colors -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/onPrimary</item>
+        <item name="colorPrimaryContainer">@color/primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/onPrimaryContainer</item>
+
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/onSecondary</item>
+        <item name="colorSecondaryContainer">@color/secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/onSecondaryContainer</item>
+
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorOnBackground">@color/onBackground</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/onSurface</item>
+        <item name="colorError">@color/error</item>
+
+        <!-- Typography Settings -->
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.App.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.App.HeadlineMedium</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.App.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.App.BodyMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.App.LabelSmall</item>
+
+        <!-- Default Component Styles -->
+        <item name="materialButtonStyle">@style/Widget.App.Button.Primary</item>
+        <item name="textInputStyle">@style/Widget.App.TextInputLayout</item>
+        <item name="materialCardViewStyle">@style/Widget.App.CardView</item>
+    </style>
+
+    <!-- Typography Styles (Hanken Grotesk) -->
+    <!-- Bạn tự đưa file hanken_grotesk.ttf vào thư mục res/font/hanken_grotesk.ttf nhé -->
+    <style name="TextAppearance.App.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="fontFamily">@font/hanken_grotesk</item>
+        <item name="android:textSize">@dimen/text_headline_lg</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="TextAppearance.App.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="fontFamily">@font/hanken_grotesk</item>
+        <item name="android:textSize">@dimen/text_headline_md</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="TextAppearance.App.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="fontFamily">@font/hanken_grotesk</item>
+        <item name="android:textSize">@dimen/text_body_lg</item>
+    </style>
+    <style name="TextAppearance.App.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="fontFamily">@font/hanken_grotesk</item>
+        <item name="android:textSize">@dimen/text_body_md</item>
+    </style>
+    <style name="TextAppearance.App.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
+        <item name="fontFamily">@font/hanken_grotesk</item>
+        <item name="android:textSize">@dimen/text_label_sm</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.05</item>
+    </style>
+
+    <!-- COMPONENT STYLES -->
+
+    <!-- Primary Button Style -->
+    <style name="Widget.App.Button.Primary" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/primaryContainer</item>
+        <item name="android:textColor">@color/onPrimary</item>
+        <item name="fontFamily">@font/hanken_grotesk</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:minHeight">@dimen/touch_target</item>
+        <item name="cornerRadius">@dimen/rounded_sm</item>
+    </style>
+
+    <!-- Secondary Button Style (Outline) -->
+    <style name="Widget.App.Button.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">@color/outlineVariant</item>
+        <item name="android:textColor">@color/onSurface</item>
+        <item name="fontFamily">@font/hanken_grotesk</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">@dimen/touch_target</item>
+        <item name="cornerRadius">@dimen/rounded_sm</item>
+    </style>
+
+    <!-- TextInputLayout Style -->
+    <style name="Widget.App.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/rounded_sm</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/rounded_sm</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/rounded_sm</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/rounded_sm</item>
+        <item name="boxStrokeColor">@color/outlineVariant</item>
+        <item name="hintTextColor">@color/onSurfaceVariant</item>
+    </style>
+
+    <!-- CardView Style -->
+    <style name="Widget.App.CardView" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/surface</item>
+        <item name="cardCornerRadius">@dimen/rounded_lg</item>
+        <item name="cardElevation">2dp</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/outlineVariant</item>
+    </style>
+
+    <!-- Chip Style -->
+    <style name="Widget.App.Chip" parent="Widget.Material3.Chip.Assist">
+        <item name="chipBackgroundColor">@color/secondaryContainer</item>
+        <item name="android:textColor">@color/onSecondaryContainer</item>
+        <item name="chipCornerRadius">4dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.LabelSmall</item>
+        <item name="chipStrokeWidth">0dp</item>
+    </style>
+
+</resources>

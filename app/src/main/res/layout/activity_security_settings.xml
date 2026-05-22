@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
+    android:padding="@dimen/margin_mobile">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bảo mật"
+        android:textAppearance="?attr/textAppearanceHeadlineLarge"
+        android:textColor="?attr/colorOnBackground"
+        android:layout_marginTop="32dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <include android:id="@+id/inputOldPassword" layout="@layout/custom_input" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/stack_lg" app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+    <include android:id="@+id/inputNewPassword" layout="@layout/custom_input" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/stack_sm" app:layout_constraintTop_toBottomOf="@id/inputOldPassword" />
+    <include android:id="@+id/btnChangePassword" layout="@layout/custom_button" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/stack_lg" app:layout_constraintTop_toBottomOf="@id/inputNewPassword" />
+
+    <include android:id="@+id/btnLogout" layout="@layout/custom_button" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="24dp" app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

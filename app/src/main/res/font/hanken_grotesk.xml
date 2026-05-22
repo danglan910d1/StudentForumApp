@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<font-family xmlns:app="http://schemas.android.com/apk/res-auto">
+    <!-- Regular (Dành cho body-lg và body-md) -->
+    <font
+        app:fontStyle="normal"
+        app:fontWeight="400"
+        app:font="@font/hanken_grotesk_regular" />
+
+    <!-- Medium/SemiBold (Dành cho label-sm) -->
+    <font
+        app:fontStyle="normal"
+        app:fontWeight="600"
+        app:font="@font/hanken_grotesk_medium" />
+
+    <!-- Bold (Dành cho headline và button-text) -->
+    <font
+        app:fontStyle="normal"
+        app:fontWeight="700"
+        app:font="@font/hanken_grotesk_bold" />
+</font-family>

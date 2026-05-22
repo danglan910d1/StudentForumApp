@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing & Layout -->
+    <dimen name="touch_target">48dp</dimen>
+    <dimen name="gutter_mobile">16dp</dimen>
+    <dimen name="margin_mobile">20dp</dimen>
+    <dimen name="stack_sm">8dp</dimen>
+    <dimen name="stack_md">16dp</dimen>
+    <dimen name="stack_lg">24dp</dimen>
+    <dimen name="card_padding">16dp</dimen>
+    
+    <!-- Corner Radius -->
+    <dimen name="rounded_sm">8dp</dimen>
+    <dimen name="rounded_md">12dp</dimen>
+    <dimen name="rounded_lg">16dp</dimen>
+    <dimen name="rounded_full">9999dp</dimen>
+
+    <!-- Typography Text Sizes -->
+    <dimen name="text_headline_lg">30sp</dimen>
+    <dimen name="text_headline_md">22sp</dimen>
+    <dimen name="text_body_lg">16sp</dimen>
+    <dimen name="text_body_md">14sp</dimen>
+    <dimen name="text_label_sm">12sp</dimen>
+    <dimen name="text_button">14sp</dimen>
+
+    <!-- Component Specific -->
+    <dimen name="input_height">52dp</dimen>
+</resources>

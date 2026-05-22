@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- CẤP QUYỀN TRUY CẬP MẠNG ĐỂ GỌI API -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.StudentForum"
+        android:usesCleartextTraffic="true"> <!-- Bắt buộc để gọi API http://10.0.2.2 -->
+
+        <!-- Đặt LoginActivity làm màn hình khởi động đầu tiên -->
+        <activity
+            android:name=".activities.LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Khai báo toàn bộ các Activity còn lại của dự án -->
+        <activity android:name=".activities.HomeActivity" android:exported="false" />
+        <activity android:name=".activities.RegisterActivity" android:exported="false" />
+        <activity android:name=".activities.AdminModerationActivity" android:exported="false" />
+        <activity android:name=".activities.ManagePostsActivity" android:exported="false" />
+        <activity android:name=".activities.PostDetailActivity" android:exported="false" />
+        <activity android:name=".activities.SearchActivity" android:exported="false" />
+        <activity android:name=".activities.CreateEditPostActivity" android:exported="false" />
+        <!-- Bạn có thể bổ sung TopicsActivity, ProfileActivity... tương tự dòng trên -->
+
+    </application>
+
+</manifest>

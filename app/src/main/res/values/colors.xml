@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Palette -->
+    <color name="primary">#030612</color>
+    <color name="onPrimary">#ffffff</color>
+    <color name="primaryContainer">#1a1f2c</color>
+    <color name="onPrimaryContainer">#828697</color>
+    <color name="inversePrimary">#c2c6d8</color>
+
+    <!-- Secondary Palette -->
+    <color name="secondary">#43617c</color>
+    <color name="onSecondary">#ffffff</color>
+    <color name="secondaryContainer">#c1e0ff</color>
+    <color name="onSecondaryContainer">#46647e</color>
+
+    <!-- Background & Surface -->
+    <color name="background">#f8f9ff</color>
+    <color name="onBackground">#0b1c30</color>
+    <color name="surface">#ffffff</color>
+    <color name="onSurface">#0b1c30</color>
+    <color name="onSurfaceVariant">#45464c</color>
+    <color name="surfaceVariant">#d3e4fe</color>
+    
+    <!-- Outlines & Error -->
+    <color name="outline">#76777c</color>
+    <color name="outlineVariant">#c6c6cc</color>
+    <color name="error">#ba1a1a</color>
+    <color name="onError">#ffffff</color>
+    <color name="errorContainer">#ffdad6</color>
+    <color name="onErrorContainer">#93000a</color>
+</resources>
