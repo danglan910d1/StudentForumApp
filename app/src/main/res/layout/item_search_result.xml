@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingVertical="12dp">
+
+    <!-- Icon box vuông -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="#DBEAFE">
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_book"
+            app:tint="#1D4ED8" />
+    </androidx.cardview.widget.CardView>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="16dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Tài liệu ôn tập môn Cấu trúc dữ liệu và Giải thuật học kỳ 1 năm học 2023-2024"
+            android:textColor="#111827"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/tvExcerpt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            tools:text="Đây là tổng hợp toàn bộ slide bài giảng, bài tập lớn và đề thi mẫu có đáp án chi tiết môn CTDL&amp;GT. Tài liệu này đặc biệt hữu ích cho các bạn sinh viên năm 2 đang chuẩn bị cho kỳ thi cuối kỳ sắp tới..."
+            android:textColor="#4B5563"
+            android:textSize="14sp"
+            android:maxLines="3"
+            android:ellipsize="end" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView
+                android:id="@+id/tvTag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_stat_box"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:text="TÀI LIỆU"
+                android:textColor="#374151"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/tvMeta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Đăng bởi: Minh Tuấn • 2 giờ trước"
+                android:textColor="#9CA3AF"
+                android:textSize="10sp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -29,10 +29,14 @@ public class PostViewModel extends ViewModel {
     public LiveData<com.studentforum.app.models.responses.PostResponse.Pagination> getPagination() { return pagination; }
 
     public void fetchFeed(int page) {
+        fetchFeed(page, null);
+    }
+
+    public void fetchFeed(int page, String query) {
         loading.setValue(true);
-        apiService.getPosts(page, null).enqueue(new Callback<PostResponse>() {
+        apiService.getPosts(page, query).enqueue(new Callback<com.studentforum.app.models.responses.PostResponse>() {
             @Override
-            public void onResponse(Call<PostResponse> call, Response<PostResponse> response) {
+            public void onResponse(Call<com.studentforum.app.models.responses.PostResponse> call, Response<com.studentforum.app.models.responses.PostResponse> response) {
                 loading.setValue(false);
                 if (response.isSuccessful() && response.body() != null) {
                     posts.setValue(response.body().getPosts());

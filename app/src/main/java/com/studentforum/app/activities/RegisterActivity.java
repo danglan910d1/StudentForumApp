@@ -50,7 +50,10 @@ public class RegisterActivity extends AppCompatActivity {
             authManager.saveSession(
                     authResponse.getToken(),
                     authResponse.getUser().getRole(),
-                    authResponse.getUser().getId()
+                    authResponse.getUser().getId(),
+                    authResponse.getUser().getName(),
+                    authResponse.getUser().getEmail(),
+                    authResponse.getUser().getAvatar()
             );
             Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, HomeActivity.class));

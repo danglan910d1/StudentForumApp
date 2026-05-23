@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.PopupMenu;
+import android.widget.ScrollView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -124,9 +125,13 @@ public class HomeActivity extends AppCompatActivity {
             // Thêm logic chuyển sang AdminModerationActivity tại đây nếu cần
         }
 
-        // Observers
+        // Lắng nghe dữ liệu
         postViewModel.getPosts().observe(this, posts -> {
             adapter.setPosts(posts);
+            ScrollView scrollView = findViewById(R.id.scrollView);
+            if (scrollView != null) {
+                scrollView.smoothScrollTo(0, 0);
+            }
             // Cập nhật Xu hướng (Popular Tag) từ Client-side
             if (posts != null && !posts.isEmpty()) {
                 java.util.List<com.studentforum.app.models.Tag> popularTags = getPopularTags(posts);
@@ -145,6 +150,7 @@ public class HomeActivity extends AppCompatActivity {
                 if (tvTotalPosts != null) {
                     tvTotalPosts.setText(String.valueOf(pagination.getTotalItems()));
                 }
+                renderPagination();
             }
         });
 
@@ -152,8 +158,57 @@ public class HomeActivity extends AppCompatActivity {
             Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
         });
 
+        // Observe loading state
+        View layoutLoading = findViewById(R.id.layoutLoading);
+        postViewModel.getLoading().observe(this, isLoading -> {
+            if (layoutLoading != null) {
+                layoutLoading.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            }
+        });
+
         // Fetch Data lần đầu
         postViewModel.fetchFeed(currentPage);
+    }
+    
+    private void renderPagination() {
+        android.widget.LinearLayout llPageNumbers = findViewById(R.id.llPageNumbers);
+        if (llPageNumbers == null) return;
+        llPageNumbers.removeAllViews();
+
+        int maxPagesToShow = 5; 
+        int startPage = Math.max(1, currentPage - 2);
+        int endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+        
+        if (endPage - startPage + 1 < maxPagesToShow) {
+            startPage = Math.max(1, endPage - maxPagesToShow + 1);
+        }
+
+        for (int i = startPage; i <= endPage; i++) {
+            TextView tvPage = new TextView(this);
+            android.widget.LinearLayout.LayoutParams params = new android.widget.LinearLayout.LayoutParams(
+                    (int) (36 * getResources().getDisplayMetrics().density),
+                    (int) (36 * getResources().getDisplayMetrics().density));
+            params.setMarginStart((int) (8 * getResources().getDisplayMetrics().density));
+            tvPage.setLayoutParams(params);
+            tvPage.setGravity(android.view.Gravity.CENTER);
+            tvPage.setText(String.valueOf(i));
+            tvPage.setTextSize(14f);
+
+            if (i == currentPage) {
+                tvPage.setTextColor(android.graphics.Color.WHITE);
+                tvPage.setTypeface(null, android.graphics.Typeface.BOLD);
+                tvPage.setBackgroundResource(R.drawable.bg_pagination_active);
+            } else {
+                tvPage.setTextColor(android.graphics.Color.parseColor("#111827"));
+                tvPage.setBackgroundResource(R.drawable.bg_pagination_item);
+                int pageToLoad = i;
+                tvPage.setOnClickListener(v -> {
+                    currentPage = pageToLoad;
+                    postViewModel.fetchFeed(currentPage);
+                });
+            }
+            llPageNumbers.addView(tvPage);
+        }
     }
     
     // Hàm trích xuất Tag xuất hiện nhiều nhất
@@ -185,8 +240,23 @@ public class HomeActivity extends AppCompatActivity {
         ImageView btnMenu = findViewById(R.id.btnMenu);
         btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
 
-        // NavigationView xử lý click các item (tuỳ chọn thêm)
         NavigationView navView = findViewById(R.id.navView);
+        View headerView = navView.getHeaderView(0);
+        
+        TextView tvDrawerName = headerView.findViewById(R.id.tvDrawerName);
+        TextView tvDrawerEmail = headerView.findViewById(R.id.tvDrawerEmail);
+        ImageView ivDrawerAvatar = headerView.findViewById(R.id.ivDrawerAvatar);
+
+        tvDrawerName.setText(authManager.getName());
+        tvDrawerEmail.setText(authManager.getEmail());
+        
+        String avatarNavUrl = com.studentforum.app.utils.AppUtils.getAssetUrl(authManager.getAvatar());
+        if (!avatarNavUrl.isEmpty()) {
+            com.bumptech.glide.Glide.with(this).load(avatarNavUrl).circleCrop().into(ivDrawerAvatar);
+        } else {
+            ivDrawerAvatar.setImageResource(R.drawable.ic_profile);
+        }
+
         navView.setNavigationItemSelectedListener(item -> {
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
@@ -200,7 +270,16 @@ public class HomeActivity extends AppCompatActivity {
 
         // Nút Avatar mở PopupMenu
         ImageView ivUserAvatar = findViewById(R.id.ivUserAvatar);
-        // TODO: Load avatar bằng Glide: Glide.with(this).load(authManager.getAvatarUrl()).circleCrop().into(ivUserAvatar);
+        String avatarUrl = com.studentforum.app.utils.AppUtils.getAssetUrl(authManager.getAvatar());
+        if (!avatarUrl.isEmpty()) {
+            com.bumptech.glide.Glide.with(this)
+                    .load(avatarUrl)
+                    .placeholder(R.drawable.ic_profile)
+                    .circleCrop()
+                    .into(ivUserAvatar);
+        } else {
+            ivUserAvatar.setImageResource(R.drawable.ic_profile);
+        }
         
         ivUserAvatar.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(HomeActivity.this, ivUserAvatar);

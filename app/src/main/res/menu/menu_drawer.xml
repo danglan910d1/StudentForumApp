@@ -3,16 +3,16 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_home"
-            android:icon="@android:drawable/ic_menu_compass"
+            android:icon="@drawable/ic_home"
             android:title="Trang chủ" />
         <item
             android:id="@+id/nav_topics"
-            android:icon="@android:drawable/ic_menu_sort_by_size"
+            android:icon="@drawable/ic_book"
             android:title="Chủ đề" />
 
         <item
-            android:id="@+id/nav_saved"
-            android:icon="@android:drawable/ic_menu_save"
-            android:title="Bài viết đã lưu" />
+            android:id="@+id/nav_posts"
+            android:icon="@drawable/ic_bookmark"
+            android:title="Bài viết" />
     </group>
 </menu>

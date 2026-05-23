@@ -21,6 +21,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <ScrollView
+            android:id="@+id/scrollView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:fillViewport="true"
@@ -128,6 +129,7 @@
 
                 <!-- Pagination -->
                 <LinearLayout
+                    android:id="@+id/llPaginationContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
@@ -143,36 +145,12 @@
                         android:padding="8dp"
                         app:tint="#6B7280" />
 
-                    <TextView
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="8dp"
-                        android:text="1"
-                        android:textColor="#FFFFFF"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:gravity="center"
-                        android:background="@drawable/bg_pagination_active" />
-
-                    <TextView
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="8dp"
-                        android:text="2"
-                        android:textColor="#111827"
-                        android:textSize="14sp"
-                        android:gravity="center"
-                        android:background="@drawable/bg_pagination_item" />
-
-                    <TextView
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:layout_marginStart="8dp"
-                        android:text="3"
-                        android:textColor="#111827"
-                        android:textSize="14sp"
-                        android:gravity="center"
-                        android:background="@drawable/bg_pagination_item" />
+                    <!-- Các số trang sẽ được thêm động vào đây từ Java -->
+                    <LinearLayout
+                        android:id="@+id/llPageNumbers"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" />
 
                     <ImageView
                         android:id="@+id/btnNextPage"
@@ -204,9 +182,15 @@
             android:layout_marginBottom="24dp"
             android:src="@android:drawable/ic_input_add"
             app:tint="#FFFFFF"
-            app:backgroundTint="#2563EB"
+            app:backgroundTint="#111827"
             app:layout_constraintBottom_toTopOf="@id/layoutFooter"
             app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Component Loading Toàn cục -->
+        <include
+            layout="@layout/layout_loading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

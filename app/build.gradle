@@ -56,4 +56,7 @@ dependencies {
 
     // 3. Load Hình ảnh (Glide - Dùng để load Cover Image trong Adapter)
     implementation 'com.github.bumptech.glide:glide:4.16.0'
+
+    // 4. Parse Markdown (Markwon)
+    implementation 'io.noties.markwon:core:4.6.2'
 }

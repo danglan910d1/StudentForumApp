@@ -24,9 +24,15 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-
+        
         authManager = new AuthManager(this);
+        if (authManager.isLoggedIn()) {
+            startActivity(new Intent(this, HomeActivity.class));
+            finish();
+            return;
+        }
+        
+        setContentView(R.layout.activity_login);
         authViewModel = new ViewModelProvider(this, new ViewModelFactory(ApiClient.getClient(authManager).create(ApiService.class)))
                 .get(AuthViewModel.class);
 
@@ -58,7 +64,14 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         authViewModel.getAuthResult().observe(this, authResponse -> {
-            authManager.saveSession(authResponse.getToken(), authResponse.getUser().getRole(), authResponse.getUser().getId());
+            authManager.saveSession(
+                authResponse.getToken(), 
+                authResponse.getUser().getRole(), 
+                authResponse.getUser().getId(),
+                authResponse.getUser().getName(),
+                authResponse.getUser().getEmail(),
+                authResponse.getUser().getAvatar()
+            );
             startActivity(new Intent(this, HomeActivity.class));
             finish();
         });

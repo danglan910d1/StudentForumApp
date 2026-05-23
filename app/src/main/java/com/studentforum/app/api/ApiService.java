@@ -66,7 +66,7 @@ public interface ApiService {
     Call<List<Comment>> getComments(@Path("id") String postId);
     
     @POST("posts/{id}/comments")
-    Call<Comment> addComment(@Path("id") String postId, @Body Map<String, String> commentData);
+    Call<Comment> addComment(@Path("id") String postId, @Body Map<String, Object> commentData);
 
     // --- 9. PROFILE & SECURITY ---
     @GET("users/me")
