@@ -304,21 +304,7 @@ public class HomeActivity extends AppCompatActivity {
         }
         
         ivUserAvatar.setOnClickListener(v -> {
-            PopupMenu popupMenu = new PopupMenu(HomeActivity.this, ivUserAvatar);
-            popupMenu.getMenu().add("Trang cá nhân");
-            popupMenu.getMenu().add("Đăng xuất");
-            
-            popupMenu.setOnMenuItemClickListener(item -> {
-                if (item.getTitle().equals("Trang cá nhân")) {
-                    Toast.makeText(HomeActivity.this, "Đang mở Profile...", Toast.LENGTH_SHORT).show();
-                } else if (item.getTitle().equals("Đăng xuất")) {
-                    authManager.logout();
-                    startActivity(new Intent(HomeActivity.this, LoginActivity.class));
-                    finish();
-                }
-                return true;
-            });
-            popupMenu.show();
+            startActivity(new Intent(HomeActivity.this, MenuActivity.class));
         });
     }
 }

@@ -47,6 +47,7 @@ public class PostDetailActivity extends AppCompatActivity implements CommentItem
     private String currentUserId;
     
     private String replyingToCommentId = null;
+    private String editingCommentId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -249,8 +250,39 @@ public class PostDetailActivity extends AppCompatActivity implements CommentItem
         if (content.isEmpty()) return;
 
         Map<String, Object> data = new HashMap<>();
-        data.put("postId", postId);
         data.put("content", content);
+        
+        if (editingCommentId != null) {
+            // Cập nhật bình luận
+            apiService.updateComment(editingCommentId, data).enqueue(new Callback<Comment>() {
+                @Override
+                public void onResponse(Call<Comment> call, Response<Comment> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        binding.edtCommentInput.setText("");
+                        binding.edtCommentInput.setHint("Thêm bình luận...");
+                        String updatedId = editingCommentId;
+                        editingCommentId = null;
+                        
+                        for (int i = 0; i < commentItemAdapter.getAdapterItemCount(); i++) {
+                            if (commentItemAdapter.getAdapterItem(i).getComment().getId().equals(updatedId)) {
+                                commentItemAdapter.getAdapterItem(i).getComment().setContent(content);
+                                fastAdapter.notifyItemChanged(i);
+                                break;
+                            }
+                        }
+                    } else {
+                        Toast.makeText(PostDetailActivity.this, "Lỗi cập nhật bình luận", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<Comment> call, Throwable t) {
+                    Toast.makeText(PostDetailActivity.this, "Lỗi mạng", Toast.LENGTH_SHORT).show();
+                }
+            });
+            return;
+        }
+
+        data.put("postId", postId);
         data.put("parentId", replyingToCommentId); // Sử dụng replyingToCommentId
 
         apiService.addComment(data).enqueue(new Callback<Comment>() {
@@ -301,7 +333,17 @@ public class PostDetailActivity extends AppCompatActivity implements CommentItem
     @Override
     public void onReplyClicked(Comment comment) {
         replyingToCommentId = comment.getId();
+        editingCommentId = null; // Huỷ edit nếu đang edit
         binding.edtCommentInput.setHint("Đang trả lời " + (comment.getAuthor() != null ? comment.getAuthor().getName() : "người này") + "...");
+        binding.edtCommentInput.requestFocus();
+    }
+
+    @Override
+    public void onEditClicked(Comment comment) {
+        editingCommentId = comment.getId();
+        replyingToCommentId = null; // Huỷ reply nếu đang reply
+        binding.edtCommentInput.setText(comment.getContent());
+        binding.edtCommentInput.setHint("Đang chỉnh sửa bình luận...");
         binding.edtCommentInput.requestFocus();
     }
 
@@ -363,6 +405,32 @@ public class PostDetailActivity extends AppCompatActivity implements CommentItem
             @Override
             public void onFailure(Call<CommentResponse> call, Throwable t) {
                 Toast.makeText(PostDetailActivity.this, "Lỗi tải phản hồi", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onLikeClicked(Comment comment) {
+        apiService.toggleLikeComment(comment.getId()).enqueue(new Callback<okhttp3.ResponseBody>() {
+            @Override
+            public void onResponse(Call<okhttp3.ResponseBody> call, Response<okhttp3.ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    boolean isLiked = comment.isLikedByCurrentUser();
+                    comment.setLikedByCurrentUser(!isLiked);
+                    comment.setLikesCount(comment.getLikesCount() + (!isLiked ? 1 : -1));
+                    
+                    for (int i = 0; i < commentItemAdapter.getAdapterItemCount(); i++) {
+                        if (commentItemAdapter.getAdapterItem(i).getComment().getId().equals(comment.getId())) {
+                            fastAdapter.notifyItemChanged(i);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<okhttp3.ResponseBody> call, Throwable t) {
+                Toast.makeText(PostDetailActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
         });
     }

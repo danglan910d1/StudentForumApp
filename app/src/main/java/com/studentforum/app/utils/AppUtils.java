@@ -43,8 +43,15 @@ public class AppUtils {
                 return (diff / 60000) + " phút trước";
             } else if (diff < 86400000) {
                 return (diff / 3600000) + " giờ trước";
-            } else {
+            } else if (diff <= 7L * 86400000L) {
                 return (diff / 86400000) + " ngày trước";
+            } else {
+                java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                try {
+                    return java.time.Instant.ofEpochMilli(time).atZone(java.time.ZoneId.systemDefault()).format(formatter);
+                } catch (Exception e) {
+                    return dateString;
+                }
             }
         } catch (Exception e) {
             return dateString;

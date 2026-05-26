@@ -83,14 +83,31 @@ public class CommentItem extends AbstractBindingItem<CommentItemBinding> {
             binding.icLike.setColorFilter(Color.parseColor("#6B7280"));
         }
         
-        // Logic Delete
+        View.OnClickListener likeClickListener = v -> {
+            if (listener != null) listener.onLikeClicked(comment);
+        };
+        binding.icLike.setOnClickListener(likeClickListener);
+        binding.tvLikeCount.setOnClickListener(likeClickListener);
+        
+        // Logic Delete / Edit via More Options
         if (currentUserId != null && comment.getAuthor() != null && currentUserId.equals(comment.getAuthor().getId())) {
-            binding.btnDelete.setVisibility(View.VISIBLE);
-            binding.btnDelete.setOnClickListener(v -> {
-                if (listener != null) listener.onDeleteClicked(comment);
+            binding.btnMoreOptions.setVisibility(View.VISIBLE);
+            binding.btnMoreOptions.setOnClickListener(v -> {
+                android.widget.PopupMenu popup = new android.widget.PopupMenu(v.getContext(), binding.btnMoreOptions);
+                popup.getMenu().add("Chỉnh sửa");
+                popup.getMenu().add("Xóa");
+                popup.setOnMenuItemClickListener(item -> {
+                    if (item.getTitle().equals("Chỉnh sửa")) {
+                        if (listener != null) listener.onEditClicked(comment);
+                    } else if (item.getTitle().equals("Xóa")) {
+                        if (listener != null) listener.onDeleteClicked(comment);
+                    }
+                    return true;
+                });
+                popup.show();
             });
         } else {
-            binding.btnDelete.setVisibility(View.GONE);
+            binding.btnMoreOptions.setVisibility(View.GONE);
         }
         
         // Logic Reply
@@ -120,12 +137,16 @@ public class CommentItem extends AbstractBindingItem<CommentItemBinding> {
         binding.ivAvatar.setImageDrawable(null);
         binding.btnViewReplies.setOnClickListener(null);
         binding.btnReply.setOnClickListener(null);
-        binding.btnDelete.setOnClickListener(null);
+        binding.btnMoreOptions.setOnClickListener(null);
+        binding.icLike.setOnClickListener(null);
+        binding.tvLikeCount.setOnClickListener(null);
     }
     
     public interface OnCommentInteractionListener {
         void onReplyClicked(Comment comment);
+        void onEditClicked(Comment comment);
         void onDeleteClicked(Comment comment);
         void onViewRepliesClicked(Comment comment);
+        void onLikeClicked(Comment comment);
     }
 }

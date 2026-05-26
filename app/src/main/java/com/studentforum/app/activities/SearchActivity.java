@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.studentforum.app.R;
 import com.studentforum.app.adapters.SearchAdapter;
+import com.studentforum.app.adapters.TagAdapter;
 import com.studentforum.app.api.ApiClient;
 import com.studentforum.app.api.ApiService;
 import com.studentforum.app.models.Post;
@@ -50,6 +51,12 @@ public class SearchActivity extends AppCompatActivity {
         searchAdapter = new SearchAdapter(this);
         rvSearchResults.setAdapter(searchAdapter);
 
+        RecyclerView rvTags = findViewById(R.id.rvTags);
+        TagAdapter tagAdapter = new TagAdapter();
+        rvTags.setAdapter(tagAdapter);
+        List<String> tags = java.util.Arrays.asList("Tất cả", "Nghiên cứu", "Tin tức", "Ngoại ngữ", "Thảo luận", "Hỏi đáp");
+        tagAdapter.setTags(tags);
+
         searchAdapter.setOnPostClickListener(post -> {
             Intent intent = new Intent(SearchActivity.this, PostDetailActivity.class);
             intent.putExtra("POST_ID", post.getId());
@@ -85,12 +92,7 @@ public class SearchActivity extends AppCompatActivity {
             searchAdapter.setPosts(posts);
         });
 
-        View layoutLoading = findViewById(R.id.layoutLoading);
-        postViewModel.getLoading().observe(this, isLoading -> {
-            if (layoutLoading != null) {
-                layoutLoading.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-            }
-        });
+        // Xóa block layoutLoading do không tồn tại id này trong layout
 
         // 1. Fetch some basic posts
         postViewModel.fetchFeed(1, null);
@@ -99,19 +101,29 @@ public class SearchActivity extends AppCompatActivity {
         apiService.getTopics().enqueue(new retrofit2.Callback<TopicResponse>() {
             @Override
             public void onResponse(retrofit2.Call<TopicResponse> call, retrofit2.Response<TopicResponse> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().getTopics() != null) {
-                    android.widget.LinearLayout llHotTopics = findViewById(R.id.llHotTopics);
+                if (response.isSuccessful() && response.body() != null) {
                     List<Topic> topics = response.body().getTopics();
-                    if (llHotTopics != null) {
-                        for (int i = 0; i < Math.min(5, topics.size()); i++) {
-                            Topic topic = topics.get(i);
-                            android.widget.TextView tv = new android.widget.TextView(SearchActivity.this);
-                            tv.setText("• " + topic.getName());
-                            tv.setTextSize(13);
-                            tv.setPadding(0, (int)(8 * getResources().getDisplayMetrics().density), 0, 0);
-                            tv.setTextColor(android.graphics.Color.parseColor("#374151"));
-                            llHotTopics.addView(tv);
+                    // Sort by postCount descending
+                    if (topics != null) {
+                        java.util.Collections.sort(topics, (t1, t2) -> Integer.compare(t2.getPostCount(), t1.getPostCount()));
+                        android.widget.LinearLayout llHotTopics = findViewById(R.id.llHotTopics);
+                        if (llHotTopics != null) {
+                            for (int i = 0; i < Math.min(5, topics.size()); i++) {
+                                Topic topic = topics.get(i);
+                                android.widget.TextView tv = new android.widget.TextView(SearchActivity.this);
+                                tv.setText("• " + topic.getName());
+                                tv.setTextSize(13);
+                                tv.setPadding(0, (int)(8 * getResources().getDisplayMetrics().density), 0, 0);
+                                tv.setTextColor(android.graphics.Color.parseColor("#374151"));
+                                tv.setOnClickListener(v -> edtSearch.setText(topic.getName()));
+                                llHotTopics.addView(tv);
+                            }
                         }
+                    }
+                    
+                    android.widget.TextView tvHotTopicsTitle = findViewById(R.id.tvHotTopicsTitle);
+                    if (tvHotTopicsTitle != null) {
+                        tvHotTopicsTitle.setText("Chủ đề có nhiều bài viết nhất");
                     }
                 }
             }

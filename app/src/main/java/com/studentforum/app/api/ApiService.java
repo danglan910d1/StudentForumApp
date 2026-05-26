@@ -65,6 +65,9 @@ public interface ApiService {
     @POST("likes/post/{id}")
     Call<ResponseBody> toggleLikePost(@Path("id") String id);
 
+    @POST("likes/comment/{id}")
+    Call<ResponseBody> toggleLikeComment(@Path("id") String id);
+
     @GET("comments")
     Call<CommentResponse> getComments(@Query("postId") String postId);
     
@@ -73,6 +76,9 @@ public interface ApiService {
     
     @POST("comments")
     Call<Comment> addComment(@Body Map<String, Object> commentData);
+    
+    @PUT("comments/{id}")
+    Call<Comment> updateComment(@Path("id") String id, @Body Map<String, Object> commentData);
     
     @DELETE("comments/{id}")
     Call<ResponseBody> deleteComment(@Path("id") String id);

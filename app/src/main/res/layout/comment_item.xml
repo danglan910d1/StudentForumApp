@@ -79,18 +79,16 @@
                 android:clickable="true"
                 android:focusable="true" />
                 
-            <TextView
-                android:id="@+id/btnDelete"
+            <ImageView
+                android:id="@+id/btnMoreOptions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:text="Xóa"
-                android:textSize="12sp"
-                android:textColor="#EF4444"
-                android:textStyle="bold"
+                android:src="@drawable/ic_more_horiz"
                 android:visibility="gone"
                 android:clickable="true"
-                android:focusable="true" />
+                android:focusable="true"
+                android:contentDescription="Thêm tùy chọn" />
         </LinearLayout>
         
         <TextView
