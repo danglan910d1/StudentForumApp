@@ -50,6 +50,7 @@ public class HomeActivity extends AppCompatActivity {
 
         RecyclerView rvPosts = findViewById(R.id.rvPosts);
         rvPosts.setLayoutManager(new LinearLayoutManager(this));
+        rvPosts.setItemAnimator(null);
         adapter = new PostAdapter(this);
         
         adapter.setOnPostClickListener(new PostAdapter.OnPostClickListener() {
@@ -79,18 +80,39 @@ public class HomeActivity extends AppCompatActivity {
                     public void onResponse(retrofit2.Call<okhttp3.ResponseBody> call, retrofit2.Response<okhttp3.ResponseBody> response) {
                         if (!response.isSuccessful()) {
                             Toast.makeText(HomeActivity.this, "Lỗi khi thả tim", Toast.LENGTH_SHORT).show();
-                            // Rollback nếu API lỗi (Tùy chọn)
+                            // Rollback
+                            boolean originalLiked = !post.isLikedByCurrentUser();
+                            int originalCount = post.getLikesCount() + (originalLiked ? 1 : -1);
+                            com.studentforum.app.viewmodels.PostViewModel.postLikeEventBus.postValue(
+                                new com.studentforum.app.viewmodels.PostViewModel.PostLikeEvent(post.getId(), originalLiked, originalCount)
+                            );
                         }
                     }
                     @Override
                     public void onFailure(retrofit2.Call<okhttp3.ResponseBody> call, Throwable t) {
                         Toast.makeText(HomeActivity.this, "Lỗi mạng", Toast.LENGTH_SHORT).show();
+                        // Rollback
+                        boolean originalLiked = !post.isLikedByCurrentUser();
+                        int originalCount = post.getLikesCount() + (originalLiked ? 1 : -1);
+                        com.studentforum.app.viewmodels.PostViewModel.postLikeEventBus.postValue(
+                            new com.studentforum.app.viewmodels.PostViewModel.PostLikeEvent(post.getId(), originalLiked, originalCount)
+                        );
                     }
                 });
             }
         });
 
         rvPosts.setAdapter(adapter);
+
+        // Đăng ký nhận sự kiện Like để đồng bộ giữa các màn hình
+        com.studentforum.app.viewmodels.PostViewModel.postLikeEventBus.observe(this, likeEvent -> {
+            if (likeEvent != null) {
+                if (adapter != null) {
+                    adapter.updatePostLikeStatus(likeEvent.postId, likeEvent.isLiked, likeEvent.likesCount);
+                }
+                com.studentforum.app.viewmodels.PostViewModel.updateCacheLikeStatus(likeEvent.postId, likeEvent.isLiked, likeEvent.likesCount);
+            }
+        });
 
         // Nút thêm bài viết
         View fabCreate = findViewById(R.id.fabCreatePost);
@@ -128,7 +150,7 @@ public class HomeActivity extends AppCompatActivity {
         // Lắng nghe dữ liệu
         postViewModel.getPosts().observe(this, posts -> {
             adapter.setPosts(posts);
-            ScrollView scrollView = findViewById(R.id.scrollView);
+            androidx.core.widget.NestedScrollView scrollView = findViewById(R.id.scrollView);
             if (scrollView != null) {
                 scrollView.smoothScrollTo(0, 0);
             }

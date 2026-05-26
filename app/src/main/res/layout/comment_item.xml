@@ -66,6 +66,44 @@
                 android:text="0"
                 android:textSize="12sp"
                 android:textColor="#6B7280" />
+                
+            <TextView
+                android:id="@+id/btnReply"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Trả lời"
+                android:textSize="12sp"
+                android:textColor="#1D4ED8"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true" />
+                
+            <TextView
+                android:id="@+id/btnDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Xóa"
+                android:textSize="12sp"
+                android:textColor="#EF4444"
+                android:textStyle="bold"
+                android:visibility="gone"
+                android:clickable="true"
+                android:focusable="true" />
         </LinearLayout>
+        
+        <TextView
+            android:id="@+id/btnViewReplies"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Xem 1 phản hồi"
+            android:textSize="12sp"
+            android:textColor="#6B7280"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:clickable="true"
+            android:focusable="true" />
     </LinearLayout>
 </LinearLayout>

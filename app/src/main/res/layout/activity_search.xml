@@ -150,33 +150,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:orientation="vertical">
-                <!-- Sẽ add view động bằng Java -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:background="@drawable/bg_button_secondary"
-                    android:drawableStart="@drawable/ic_search"
-                    android:drawablePadding="8dp"
-                    android:drawableTint="#6B7280"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="6dp"
-                    android:text="Lịch sử triết học"
-                    android:textColor="#374151"
-                    android:textSize="13sp" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:background="@drawable/bg_button_secondary"
-                    android:drawableStart="@drawable/ic_search"
-                    android:drawablePadding="8dp"
-                    android:drawableTint="#6B7280"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="6dp"
-                    android:text="Đề thi Kỹ thuật lập trình"
-                    android:textColor="#374151"
-                    android:textSize="13sp" />
+                <!-- Chờ thêm tính năng lưu lịch sử thực tế -->
             </LinearLayout>
 
             <!-- Kết quả gợi ý -->
@@ -214,6 +188,7 @@
                     app:strokeColor="#E5E7EB"
                     app:strokeWidth="1dp">
                     <LinearLayout
+                        android:id="@+id/llHotTopics"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
@@ -224,9 +199,7 @@
                             android:text="Chủ đề hot"
                             android:textStyle="bold"
                             android:textColor="#111827" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="• Tuyển dụng thực tập sinh" android:textSize="13sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="• Học bổng kỳ 1" android:textSize="13sp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="• Review môn học" android:textSize="13sp"/>
+                        <!-- Dynamic content will be injected here -->
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 

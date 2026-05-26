@@ -1,58 +1,70 @@
 package com.studentforum.app.activities;
 
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import android.view.View;
+import android.widget.PopupMenu;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
+import com.bumptech.glide.Glide;
+import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.studentforum.app.R;
+import com.studentforum.app.adapters.items.CommentItem;
 import com.studentforum.app.api.ApiClient;
 import com.studentforum.app.api.ApiService;
+import com.studentforum.app.databinding.ActivityPostDetailBinding;
+import com.studentforum.app.models.Comment;
 import com.studentforum.app.models.Post;
+import com.studentforum.app.models.responses.CommentResponse;
+import com.studentforum.app.utils.AppUtils;
 import com.studentforum.app.utils.AuthManager;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import io.noties.markwon.Markwon;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import android.widget.EditText;
-import com.studentforum.app.adapters.CommentAdapter;
-import com.studentforum.app.models.Comment;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-
-import io.noties.markwon.Markwon;
-
-public class PostDetailActivity extends AppCompatActivity {
+public class PostDetailActivity extends AppCompatActivity implements CommentItem.OnCommentInteractionListener {
     private String postId;
     private ApiService apiService;
+    private ActivityPostDetailBinding binding;
 
-    private TextView tvTitle, tvContent, tvCategory, tvTime, tvAuthorName, tvDate, tvLikeCount, tvCommentTitle;
-    private ImageView ivCoverImage, ivAuthorAvatar, ivMoreOptions;
-    private RecyclerView rvComments;
-    private CommentAdapter commentAdapter;
-    private EditText edtCommentInput;
+    private ItemAdapter<CommentItem> commentItemAdapter;
+    private FastAdapter<CommentItem> fastAdapter;
+
+    private Post currentPost;
+    private AuthManager authManager;
+    private String currentUserId;
+    
+    private String replyingToCommentId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_post_detail);
+        binding = ActivityPostDetailBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        authManager = new AuthManager(this);
+        currentUserId = authManager.getUserId();
+
+        setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
-        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        binding.toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         postId = getIntent().getStringExtra("POST_ID");
-        apiService = ApiClient.getClient(new AuthManager(this)).create(ApiService.class);
+        apiService = ApiClient.getClient(authManager).create(ApiService.class);
 
         initViews();
         fetchPostDetail();
@@ -60,80 +72,74 @@ public class PostDetailActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        tvTitle = findViewById(R.id.tvTitle);
-        tvContent = findViewById(R.id.tvContent);
-        tvCategory = findViewById(R.id.tvCategory);
-        tvTime = findViewById(R.id.tvTime);
-        tvAuthorName = findViewById(R.id.tvAuthorName);
-        tvDate = findViewById(R.id.tvDate);
-        tvLikeCount = findViewById(R.id.tvLikeCount);
-        tvCommentTitle = findViewById(R.id.tvCommentTitle);
-        ivCoverImage = findViewById(R.id.ivCoverImage);
-        ivAuthorAvatar = findViewById(R.id.ivAuthorAvatar);
-        ivMoreOptions = findViewById(R.id.ivMoreOptions);
-        rvComments = findViewById(R.id.rvComments);
-        edtCommentInput = findViewById(R.id.edtCommentInput);
-        
-        rvComments.setLayoutManager(new LinearLayoutManager(this));
-        commentAdapter = new CommentAdapter(this);
-        rvComments.setAdapter(commentAdapter);
+        commentItemAdapter = new ItemAdapter<>();
+        fastAdapter = FastAdapter.with(commentItemAdapter);
 
-        findViewById(R.id.btnSendComment).setOnClickListener(v -> sendComment());
-        
-        findViewById(R.id.btnLike).setOnClickListener(v -> {
-            ImageView ivLikeIcon = findViewById(R.id.ivLikeIcon);
-            TextView tvLikeCount = findViewById(R.id.tvLikeCount);
-            
+        binding.rvComments.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvComments.setAdapter(fastAdapter);
+
+        binding.btnSendComment.setOnClickListener(v -> sendComment());
+
+        binding.btnLike.setOnClickListener(v -> {
+            if (currentPost == null) return;
+            boolean isCurrentlyLiked = currentPost.isLikedByCurrentUser();
+            boolean newLikedState = !isCurrentlyLiked;
+            int newLikesCount = currentPost.getLikesCount() + (isCurrentlyLiked ? -1 : 1);
+
+            currentPost.setLikedByCurrentUser(newLikedState);
+            currentPost.setLikesCount(newLikesCount);
+
+            updateLikeUI(newLikedState, newLikesCount);
+
+            com.studentforum.app.viewmodels.PostViewModel.postLikeEventBus.postValue(
+                    new com.studentforum.app.viewmodels.PostViewModel.PostLikeEvent(currentPost.getId(), newLikedState, newLikesCount)
+            );
+
             apiService.toggleLikePost(postId).enqueue(new Callback<okhttp3.ResponseBody>() {
                 @Override
                 public void onResponse(Call<okhttp3.ResponseBody> call, Response<okhttp3.ResponseBody> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        try {
-                            String jsonString = response.body().string();
-                            org.json.JSONObject jsonObject = new org.json.JSONObject(jsonString);
-                            boolean isLiked = jsonObject.getBoolean("isLiked");
-                            int likeCount = jsonObject.getInt("likeCount");
-                            
-                            if (ivLikeIcon != null && tvLikeCount != null) {
-                                if (isLiked) {
-                                    ivLikeIcon.setImageResource(R.drawable.ic_heart_filled);
-                                    ivLikeIcon.setColorFilter(android.graphics.Color.parseColor("#EF4444"));
-                                } else {
-                                    ivLikeIcon.setImageResource(R.drawable.ic_heart);
-                                    ivLikeIcon.setColorFilter(android.graphics.Color.parseColor("#6B7280"));
-                                }
-                                tvLikeCount.setText(String.valueOf(likeCount));
-                            }
-                        } catch (Exception e) {
-                            fetchPostDetail();
-                        }
-                    } else {
-                        Toast.makeText(PostDetailActivity.this, "Lỗi thả tim", Toast.LENGTH_SHORT).show();
-                    }
+                    if (!response.isSuccessful()) revertLike(isCurrentlyLiked);
                 }
+
                 @Override
-                public void onFailure(Call<okhttp3.ResponseBody> call, Throwable t) {}
+                public void onFailure(Call<okhttp3.ResponseBody> call, Throwable t) {
+                    revertLike(isCurrentlyLiked);
+                }
             });
         });
     }
 
+    private void revertLike(boolean originalState) {
+        currentPost.setLikedByCurrentUser(originalState);
+        currentPost.setLikesCount(currentPost.getLikesCount() + (originalState ? 1 : -1));
+        updateLikeUI(currentPost.isLikedByCurrentUser(), currentPost.getLikesCount());
+        com.studentforum.app.viewmodels.PostViewModel.postLikeEventBus.postValue(
+                new com.studentforum.app.viewmodels.PostViewModel.PostLikeEvent(currentPost.getId(), originalState, currentPost.getLikesCount())
+        );
+    }
+
+    private void updateLikeUI(boolean isLiked, int count) {
+        if (isLiked) {
+            binding.ivLikeIcon.setImageResource(R.drawable.ic_heart_filled);
+            binding.ivLikeIcon.setColorFilter(Color.parseColor("#EF4444"));
+        } else {
+            binding.ivLikeIcon.setImageResource(R.drawable.ic_heart);
+            binding.ivLikeIcon.setColorFilter(Color.parseColor("#6B7280"));
+        }
+        binding.tvLikeCount.setText(String.valueOf(count));
+    }
+
     private void fetchPostDetail() {
         if (postId == null) return;
-
-        View layoutLoading = findViewById(R.id.layoutLoading);
-        if (layoutLoading != null) layoutLoading.setVisibility(android.view.View.VISIBLE);
-
         apiService.getPostDetail(postId).enqueue(new Callback<Post>() {
             @Override
             public void onResponse(Call<Post> call, Response<Post> response) {
-                if (layoutLoading != null) layoutLoading.setVisibility(android.view.View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
                     displayPost(response.body());
                 } else {
                     Toast.makeText(PostDetailActivity.this, "Lỗi tải bài viết", Toast.LENGTH_SHORT).show();
                 }
             }
-
             @Override
             public void onFailure(Call<Post> call, Throwable t) {
                 Toast.makeText(PostDetailActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
@@ -142,122 +148,221 @@ public class PostDetailActivity extends AppCompatActivity {
     }
 
     private void displayPost(Post post) {
-        tvTitle.setText(post.getTitle());
-        
-        if (post.getTopic() != null) {
-            tvCategory.setText(post.getTopic().getName());
-        }
-        
-        if (post.getAuthor() != null) {
-            tvAuthorName.setText(post.getAuthor().getName());
-        }
+        this.currentPost = post;
+        binding.tvTitle.setText(post.getTitle());
 
-        tvDate.setText(post.getCreatedAt()); // Format lại thời gian nếu cần
-        tvLikeCount.setText(String.valueOf(post.getLikesCount()));
+        if (post.getTopic() != null) binding.tvCategory.setText(post.getTopic().getName());
+        if (post.getAuthor() != null) binding.tvAuthorName.setText(post.getAuthor().getName());
+        binding.tvTime.setText(AppUtils.getTimeAgo(post.getCreatedAt()));
+        binding.tvDate.setText("Đã đăng vào " + AppUtils.formatDate(post.getCreatedAt()));
+        updateLikeUI(post.isLikedByCurrentUser(), post.getLikesCount());
 
-        // Xử lý logic ẩn/hiện ảnh bìa (Cover Image)
         if (post.getCoverImage() != null && !post.getCoverImage().trim().isEmpty()) {
-            ivCoverImage.setVisibility(android.view.View.VISIBLE);
-            String coverUrl = com.studentforum.app.utils.AppUtils.getAssetUrl(post.getCoverImage());
-            com.bumptech.glide.Glide.with(this).load(coverUrl).into(ivCoverImage);
+            binding.ivCoverImage.setVisibility(View.VISIBLE);
+            Glide.with(this).load(AppUtils.getAssetUrl(post.getCoverImage())).into(binding.ivCoverImage);
         } else {
-            ivCoverImage.setVisibility(android.view.View.VISIBLE);
-            ivCoverImage.setImageResource(R.drawable.bg_library);
+            binding.ivCoverImage.setVisibility(View.VISIBLE);
+            binding.ivCoverImage.setImageResource(R.drawable.bg_library);
         }
 
         if (post.getAuthor() != null && post.getAuthor().getAvatar() != null && !post.getAuthor().getAvatar().isEmpty()) {
-            String avatarUrl = com.studentforum.app.utils.AppUtils.getAssetUrl(post.getAuthor().getAvatar());
-            com.bumptech.glide.Glide.with(this)
-                    .load(avatarUrl)
+            Glide.with(this)
+                    .load(AppUtils.getAssetUrl(post.getAuthor().getAvatar()))
                     .placeholder(R.drawable.ic_profile)
                     .circleCrop()
-                    .into(ivAuthorAvatar);
+                    .into(binding.ivAuthorAvatar);
         } else {
-            ivAuthorAvatar.setImageResource(R.drawable.ic_profile);
+            binding.ivAuthorAvatar.setImageResource(R.drawable.ic_profile);
         }
 
-        ImageView ivLikeIcon = findViewById(R.id.ivLikeIcon);
-        if (ivLikeIcon != null) {
-            if (post.isLikedByCurrentUser()) {
-                ivLikeIcon.setImageResource(R.drawable.ic_heart_filled);
-                ivLikeIcon.setColorFilter(android.graphics.Color.parseColor("#EF4444"));
-            } else {
-                ivLikeIcon.setImageResource(R.drawable.ic_heart);
-                ivLikeIcon.setColorFilter(android.graphics.Color.parseColor("#6B7280"));
-            }
-        }
-
-        // --- Logic Nút More Options (3 chấm) ---
-        AuthManager authManager = new AuthManager(this);
-        if (authManager.getUserId() != null && post.getAuthor() != null && authManager.getUserId().equals(post.getAuthor().getId())) {
-            ivMoreOptions.setVisibility(android.view.View.VISIBLE);
-            ivMoreOptions.setOnClickListener(v -> {
-                android.widget.PopupMenu popup = new android.widget.PopupMenu(this, ivMoreOptions);
-                popup.getMenu().add("Chỉnh sửa bài viết");
-                popup.getMenu().add("Xóa bài viết");
-                popup.setOnMenuItemClickListener(item -> {
-                    if (item.getTitle().equals("Chỉnh sửa bài viết")) {
-                        android.content.Intent intent = new android.content.Intent(this, CreateEditPostActivity.class);
-                        intent.putExtra("POST_ID", post.getId());
-                        startActivity(intent);
-                    } else {
-                        Toast.makeText(this, "Đã gửi yêu cầu xóa bài viết", Toast.LENGTH_SHORT).show();
-                    }
-                    return true;
-                });
-                popup.show();
-            });
+        if (currentUserId != null && post.getAuthor() != null && currentUserId.equals(post.getAuthor().getId())) {
+            binding.ivMoreOptions.setVisibility(View.VISIBLE);
+            binding.ivMoreOptions.setOnClickListener(v -> showOwnerMenu(post));
         } else {
-            ivMoreOptions.setVisibility(android.view.View.GONE);
+            binding.ivMoreOptions.setVisibility(View.GONE);
         }
 
-        // Markwon tự render nội dung sang HTML:
         Markwon markwon = Markwon.create(this);
-        markwon.setMarkdown(tvContent, post.getContent() != null ? post.getContent() : "");
+        markwon.setMarkdown(binding.tvContent, post.getContent() != null ? post.getContent() : "");
+    }
+
+    private void showOwnerMenu(Post post) {
+        PopupMenu popup = new PopupMenu(this, binding.ivMoreOptions);
+        popup.getMenu().add("Chỉnh sửa bài viết");
+        popup.getMenu().add("Xóa bài viết");
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getTitle().equals("Chỉnh sửa bài viết")) {
+                Intent intent = new Intent(this, CreateEditPostActivity.class);
+                intent.putExtra("POST_ID", post.getId());
+                startActivity(intent);
+            } else {
+                deletePost();
+            }
+            return true;
+        });
+        popup.show();
+    }
+
+    private void deletePost() {
+        apiService.deletePost(postId).enqueue(new Callback<okhttp3.ResponseBody>() {
+            @Override
+            public void onResponse(Call<okhttp3.ResponseBody> call, Response<okhttp3.ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(PostDetailActivity.this, "Đã xóa bài viết", Toast.LENGTH_SHORT).show();
+                    finish();
+                } else {
+                    Toast.makeText(PostDetailActivity.this, "Không thể xóa bài viết", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<okhttp3.ResponseBody> call, Throwable t) {
+                Toast.makeText(PostDetailActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void fetchComments() {
         if (postId == null) return;
-        apiService.getComments(postId).enqueue(new Callback<List<Comment>>() {
+        apiService.getComments(postId).enqueue(new Callback<CommentResponse>() {
             @Override
-            public void onResponse(Call<List<Comment>> call, Response<List<Comment>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    commentAdapter.setComments(response.body());
-                    tvCommentTitle.setText("Bình luận (" + response.body().size() + ")");
+            public void onResponse(Call<CommentResponse> call, Response<CommentResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getComments() != null) {
+                    List<Comment> rawComments = response.body().getComments();
+                    List<CommentItem> items = new ArrayList<>();
+                    for (Comment c : rawComments) {
+                        c.setViewLevel(0);
+                        items.add(new CommentItem(c, currentUserId, PostDetailActivity.this));
+                    }
+                    commentItemAdapter.set(items);
+                    binding.tvCommentTitle.setText("Bình luận (" + items.size() + ")");
                 }
             }
             @Override
-            public void onFailure(Call<List<Comment>> call, Throwable t) {}
+            public void onFailure(Call<CommentResponse> call, Throwable t) {
+                Toast.makeText(PostDetailActivity.this, "Lỗi kết nối bình luận", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
     private void sendComment() {
-        String content = edtCommentInput.getText().toString().trim();
+        String content = binding.edtCommentInput.getText().toString().trim();
         if (content.isEmpty()) return;
-        
-        Map<String, Object> data = new java.util.HashMap<>();
+
+        Map<String, Object> data = new HashMap<>();
         data.put("postId", postId);
         data.put("content", content);
-        data.put("parentId", null);
-        
-        apiService.addComment(postId, data).enqueue(new Callback<Comment>() {
+        data.put("parentId", replyingToCommentId); // Sử dụng replyingToCommentId
+
+        apiService.addComment(data).enqueue(new Callback<Comment>() {
             @Override
             public void onResponse(Call<Comment> call, Response<Comment> response) {
-                if (response.isSuccessful()) {
-                    edtCommentInput.setText("");
-                    fetchComments(); // Reload
-                } else {
-                    try {
-                        String err = response.errorBody() != null ? response.errorBody().string() : "Lỗi gửi bình luận";
-                        Toast.makeText(PostDetailActivity.this, err, Toast.LENGTH_LONG).show();
-                    } catch(Exception e) {
-                        Toast.makeText(PostDetailActivity.this, "Lỗi gửi bình luận", Toast.LENGTH_SHORT).show();
+                if (response.isSuccessful() && response.body() != null) {
+                    binding.edtCommentInput.setText("");
+                    binding.edtCommentInput.setHint("Thêm bình luận...");
+                    
+                    Comment newComment = response.body();
+                    String parentId = replyingToCommentId;
+                    replyingToCommentId = null; // Reset lại
+                    
+                    if (parentId != null) {
+                        newComment.setViewLevel(1);
+                        int insertPosition = -1;
+                        for (int i = 0; i < commentItemAdapter.getAdapterItemCount(); i++) {
+                            if (commentItemAdapter.getAdapterItem(i).getComment().getId().equals(parentId)) {
+                                insertPosition = i + 1;
+                                while (insertPosition < commentItemAdapter.getAdapterItemCount() && 
+                                       commentItemAdapter.getAdapterItem(insertPosition).getComment().getViewLevel() > 0) {
+                                    insertPosition++;
+                                }
+                                break;
+                            }
+                        }
+                        if (insertPosition != -1) {
+                            commentItemAdapter.add(insertPosition, new CommentItem(newComment, currentUserId, PostDetailActivity.this));
+                        } else {
+                            fetchComments();
+                        }
+                    } else {
+                        newComment.setViewLevel(0);
+                        commentItemAdapter.add(0, new CommentItem(newComment, currentUserId, PostDetailActivity.this));
+                        binding.tvCommentTitle.setText("Bình luận (" + commentItemAdapter.getAdapterItemCount() + ")");
                     }
+                } else {
+                    Toast.makeText(PostDetailActivity.this, "Lỗi gửi bình luận", Toast.LENGTH_SHORT).show();
                 }
             }
             @Override
             public void onFailure(Call<Comment> call, Throwable t) {
                 Toast.makeText(PostDetailActivity.this, "Lỗi mạng", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onReplyClicked(Comment comment) {
+        replyingToCommentId = comment.getId();
+        binding.edtCommentInput.setHint("Đang trả lời " + (comment.getAuthor() != null ? comment.getAuthor().getName() : "người này") + "...");
+        binding.edtCommentInput.requestFocus();
+    }
+
+    @Override
+    public void onDeleteClicked(Comment comment) {
+        apiService.deleteComment(comment.getId()).enqueue(new Callback<okhttp3.ResponseBody>() {
+            @Override
+            public void onResponse(Call<okhttp3.ResponseBody> call, Response<okhttp3.ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(PostDetailActivity.this, "Đã xóa bình luận", Toast.LENGTH_SHORT).show();
+                    for (int i = 0; i < commentItemAdapter.getAdapterItemCount(); i++) {
+                        if (commentItemAdapter.getAdapterItem(i).getComment().getId().equals(comment.getId())) {
+                            commentItemAdapter.remove(i);
+                            break;
+                        }
+                    }
+                    binding.tvCommentTitle.setText("Bình luận (" + commentItemAdapter.getAdapterItemCount() + ")");
+                } else {
+                    Toast.makeText(PostDetailActivity.this, "Không thể xóa bình luận", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<okhttp3.ResponseBody> call, Throwable t) {
+                Toast.makeText(PostDetailActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onViewRepliesClicked(Comment comment) {
+        apiService.getReplies(postId, comment.getId()).enqueue(new Callback<CommentResponse>() {
+            @Override
+            public void onResponse(Call<CommentResponse> call, Response<CommentResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getComments() != null) {
+                    List<Comment> replies = response.body().getComments();
+                    List<CommentItem> replyItems = new ArrayList<>();
+                    for (Comment r : replies) {
+                        r.setViewLevel(comment.getViewLevel() + 1);
+                        replyItems.add(new CommentItem(r, currentUserId, PostDetailActivity.this));
+                    }
+                    
+                    // Tìm vị trí của comment cha để chèn vào bên dưới
+                    int position = -1;
+                    for (int i = 0; i < commentItemAdapter.getAdapterItemCount(); i++) {
+                        if (commentItemAdapter.getAdapterItem(i).getComment().getId().equals(comment.getId())) {
+                            position = i;
+                            break;
+                        }
+                    }
+                    if (position != -1) {
+                        commentItemAdapter.add(position + 1, replyItems);
+                        // Cập nhật lại UI nút "Xem phản hồi"
+                        commentItemAdapter.getAdapterItem(position).getComment().setRepliesCount(0); // Ẩn nút đi
+                        fastAdapter.notifyItemChanged(position);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CommentResponse> call, Throwable t) {
+                Toast.makeText(PostDetailActivity.this, "Lỗi tải phản hồi", Toast.LENGTH_SHORT).show();
             }
         });
     }

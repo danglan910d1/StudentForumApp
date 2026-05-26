@@ -2,6 +2,7 @@ package com.studentforum.app.activities;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
@@ -15,7 +16,14 @@ import com.studentforum.app.R;
 import com.studentforum.app.api.ApiClient;
 import com.studentforum.app.api.ApiService;
 import com.studentforum.app.models.Post;
+import com.studentforum.app.models.Topic;
+import com.studentforum.app.models.responses.TopicResponse;
 import com.studentforum.app.utils.AuthManager;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -33,6 +41,9 @@ public class CreateEditPostActivity extends AppCompatActivity {
     private Spinner spinnerTopic;
     private Switch switchComments, switchAnonymous;
 
+    private List<Topic> topicsList = new ArrayList<>();
+    private ArrayAdapter<String> topicAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,10 +58,7 @@ public class CreateEditPostActivity extends AppCompatActivity {
 
         initViews();
         setupMode();
-
-        if (isEditMode) {
-            fetchPostData();
-        }
+        fetchTopics();
     }
 
     private void initViews() {
@@ -72,18 +80,21 @@ public class CreateEditPostActivity extends AppCompatActivity {
         switchComments = findViewById(R.id.switchComments);
         switchAnonymous = findViewById(R.id.switchAnonymous);
 
+        topicAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>());
+        topicAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTopic.setAdapter(topicAdapter);
+
         btnBack.setOnClickListener(v -> finish());
         btnCancel.setOnClickListener(v -> finish());
 
         btnSave.setOnClickListener(v -> savePost());
         
         btnDeletePost.setOnClickListener(v -> {
-            Toast.makeText(this, "Yêu cầu xóa bài viết...", Toast.LENGTH_SHORT).show();
-            // TODO: Gọi API Delete Post
+            deletePost();
         });
 
         btnUploadImage.setOnClickListener(v -> {
-            Toast.makeText(this, "Mở thư viện ảnh...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Tính năng tải ảnh đang cập nhật...", Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -99,6 +110,31 @@ public class CreateEditPostActivity extends AppCompatActivity {
         }
     }
 
+    private void fetchTopics() {
+        apiService.getTopics().enqueue(new Callback<TopicResponse>() {
+            @Override
+            public void onResponse(Call<TopicResponse> call, Response<TopicResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getTopics() != null) {
+                    topicsList = response.body().getTopics();
+                    topicAdapter.clear();
+                    for (Topic t : topicsList) {
+                        topicAdapter.add(t.getName());
+                    }
+                    topicAdapter.notifyDataSetChanged();
+                    
+                    if (isEditMode) {
+                        fetchPostData();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<TopicResponse> call, Throwable t) {
+                Toast.makeText(CreateEditPostActivity.this, "Lỗi tải chủ đề", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void fetchPostData() {
         apiService.getPostDetail(postId).enqueue(new Callback<Post>() {
             @Override
@@ -107,7 +143,25 @@ public class CreateEditPostActivity extends AppCompatActivity {
                     Post post = response.body();
                     edtTitle.setText(post.getTitle());
                     edtContent.setText(post.getContent());
-                    // Cập nhật Tags, Switch,...
+                    
+                    // Set tags
+                    if (post.getTags() != null) {
+                        List<String> tagNames = new ArrayList<>();
+                        for (com.studentforum.app.models.Tag tag : post.getTags()) {
+                            tagNames.add(tag.getName());
+                        }
+                        edtTags.setText(android.text.TextUtils.join(", ", tagNames));
+                    }
+                    
+                    // Set topic
+                    if (post.getTopic() != null) {
+                        for (int i = 0; i < topicsList.size(); i++) {
+                            if (topicsList.get(i).getId().equals(post.getTopic().getId())) {
+                                spinnerTopic.setSelection(i);
+                                break;
+                            }
+                        }
+                    }
                 }
             }
             @Override
@@ -118,8 +172,81 @@ public class CreateEditPostActivity extends AppCompatActivity {
     }
 
     private void savePost() {
-        Toast.makeText(this, "Đang lưu bài viết...", Toast.LENGTH_SHORT).show();
-        // TODO: Map dữ liệu từ edtTitle, edtContent, v.v. và gọi apiService.createPost / updatePost
-        // finish();
+        String title = edtTitle.getText().toString().trim();
+        String content = edtContent.getText().toString().trim();
+        String tagsInput = edtTags.getText().toString().trim();
+        
+        if (title.isEmpty() || content.isEmpty() || topicsList.isEmpty()) {
+            Toast.makeText(this, "Vui lòng nhập đủ Tiêu đề, Nội dung và Chủ đề", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        String topicId = topicsList.get(spinnerTopic.getSelectedItemPosition()).getId();
+        
+        List<String> tags = new ArrayList<>();
+        if (!tagsInput.isEmpty()) {
+            for (String tag : tagsInput.split(",")) {
+                tags.add(tag.trim());
+            }
+        }
+
+        Map<String, Object> postData = new HashMap<>();
+        postData.put("title", title);
+        postData.put("content", content);
+        postData.put("topicId", topicId);
+        postData.put("tags", tags);
+
+        if (isEditMode) {
+            apiService.updatePost(postId, postData).enqueue(new Callback<Post>() {
+                @Override
+                public void onResponse(Call<Post> call, Response<Post> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(CreateEditPostActivity.this, "Cập nhật bài viết thành công", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Toast.makeText(CreateEditPostActivity.this, "Lỗi cập nhật", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<Post> call, Throwable t) {
+                    Toast.makeText(CreateEditPostActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            apiService.createPost(postData).enqueue(new Callback<Post>() {
+                @Override
+                public void onResponse(Call<Post> call, Response<Post> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(CreateEditPostActivity.this, "Đăng bài viết thành công", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Toast.makeText(CreateEditPostActivity.this, "Lỗi đăng bài", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<Post> call, Throwable t) {
+                    Toast.makeText(CreateEditPostActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+    
+    private void deletePost() {
+        if (!isEditMode || postId == null) return;
+        apiService.deletePost(postId).enqueue(new Callback<okhttp3.ResponseBody>() {
+            @Override
+            public void onResponse(Call<okhttp3.ResponseBody> call, Response<okhttp3.ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(CreateEditPostActivity.this, "Đã xóa bài viết", Toast.LENGTH_SHORT).show();
+                    finish();
+                } else {
+                    Toast.makeText(CreateEditPostActivity.this, "Không thể xóa", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<okhttp3.ResponseBody> call, Throwable t) {
+                Toast.makeText(CreateEditPostActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

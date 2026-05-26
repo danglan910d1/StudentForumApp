@@ -23,7 +23,7 @@ public interface ApiService {
 
     // --- 2. POSTS (Public & Feed) ---
     @GET("posts")
-    Call<PostResponse> getPosts(@Query("page") Integer page, @Query("search") String query);
+    Call<PostResponse> getPosts(@Query("page") Integer page, @Query("limit") Integer limit, @Query("search") String query);
 
     @GET("posts/{id}")
     Call<Post> getPostDetail(@Path("id") String id);
@@ -34,6 +34,9 @@ public interface ApiService {
 
     @PUT("posts/{id}")
     Call<Post> updatePost(@Path("id") String id, @Body Map<String, Object> postData);
+    
+    @DELETE("posts/{id}")
+    Call<ResponseBody> deletePost(@Path("id") String id);
     
     @Multipart
     @POST("upload")
@@ -52,7 +55,7 @@ public interface ApiService {
 
     // --- 6. TOPICS ---
     @GET("topics")
-    Call<List<Topic>> getTopics();
+    Call<TopicResponse> getTopics();
 
     // --- 7. NOTIFICATIONS ---
     @GET("notifications")
@@ -62,11 +65,17 @@ public interface ApiService {
     @POST("likes/post/{id}")
     Call<ResponseBody> toggleLikePost(@Path("id") String id);
 
-    @GET("posts/{id}/comments")
-    Call<List<Comment>> getComments(@Path("id") String postId);
+    @GET("comments")
+    Call<CommentResponse> getComments(@Query("postId") String postId);
     
-    @POST("posts/{id}/comments")
-    Call<Comment> addComment(@Path("id") String postId, @Body Map<String, Object> commentData);
+    @GET("comments")
+    Call<CommentResponse> getReplies(@Query("postId") String postId, @Query("parentId") String parentId);
+    
+    @POST("comments")
+    Call<Comment> addComment(@Body Map<String, Object> commentData);
+    
+    @DELETE("comments/{id}")
+    Call<ResponseBody> deleteComment(@Path("id") String id);
 
     // --- 9. PROFILE & SECURITY ---
     @GET("users/me")

@@ -40,6 +40,20 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         notifyDataSetChanged();
     }
 
+    public void updatePostLikeStatus(String postId, boolean isLiked, int likesCount) {
+        for (int i = 0; i < postList.size(); i++) {
+            Post post = postList.get(i);
+            if (post.getId() != null && post.getId().equals(postId)) {
+                if (post.isLikedByCurrentUser() != isLiked || post.getLikesCount() != likesCount) {
+                    post.setLikedByCurrentUser(isLiked);
+                    post.setLikesCount(likesCount);
+                    notifyItemChanged(i);
+                }
+                break;
+            }
+        }
+    }
+
     @NonNull
     @Override
     public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -56,6 +70,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.tvLikeCount.setText(String.valueOf(post.getLikesCount()));
         holder.tvCommentCount.setText(String.valueOf(post.getCommentsCount()));
         
+        String timeAgo = com.studentforum.app.utils.AppUtils.getTimeAgo(post.getCreatedAt());
+        holder.tvTime.setText(timeAgo);
+
         // Đổi màu icon Like
         if (post.isLikedByCurrentUser()) {
             holder.icLike.setImageResource(R.drawable.ic_heart_filled);
@@ -100,13 +117,21 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.icLike.setOnClickListener(v -> {
             // 1. Optimistic Update
             boolean isCurrentlyLiked = post.isLikedByCurrentUser();
-            post.setLikedByCurrentUser(!isCurrentlyLiked);
-            post.setLikesCount(post.getLikesCount() + (isCurrentlyLiked ? -1 : 1));
+            boolean newLikedState = !isCurrentlyLiked;
+            int newLikesCount = post.getLikesCount() + (isCurrentlyLiked ? -1 : 1);
+
+            post.setLikedByCurrentUser(newLikedState);
+            post.setLikesCount(newLikesCount);
 
             // 2. Kích hoạt re-bind cho hàng này để cập nhật màu icon và số đếm
             notifyItemChanged(position);
 
-            // 3. Bắn event lên Activity
+            // 3. Bắn event lên EventBus để các màn hình khác nhận
+            com.studentforum.app.viewmodels.PostViewModel.postLikeEventBus.postValue(
+                new com.studentforum.app.viewmodels.PostViewModel.PostLikeEvent(post.getId(), newLikedState, newLikesCount)
+            );
+
+            // 4. Bắn event lên Activity để thực hiện API Call
             if (listener != null) listener.onLikeClick(post, position);
         });
     }
@@ -117,7 +142,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     }
 
     public static class PostViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvContent, tvCategory, tvAuthorName, tvLikeCount, tvCommentCount;
+        TextView tvTitle, tvContent, tvCategory, tvAuthorName, tvLikeCount, tvCommentCount, tvTime;
         ImageView ivCover, ivAuthorAvatar, icLike;
 
         public PostViewHolder(@NonNull View itemView) {
@@ -128,6 +153,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             tvAuthorName = itemView.findViewById(R.id.tvAuthorName);
             tvLikeCount = itemView.findViewById(R.id.tvLikeCount);
             tvCommentCount = itemView.findViewById(R.id.tvCommentCount);
+            tvTime = itemView.findViewById(R.id.tvTime);
             
             ivAuthorAvatar = itemView.findViewById(R.id.ivAuthorAvatar);
             icLike = itemView.findViewById(R.id.icLike);

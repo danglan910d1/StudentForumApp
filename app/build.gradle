@@ -59,4 +59,8 @@ dependencies {
 
     // 4. Parse Markdown (Markwon)
     implementation 'io.noties.markwon:core:4.6.2'
+
+    // 5. FastAdapter (Xử lý danh sách và RecyclerView linh hoạt)
+    implementation "com.mikepenz:fastadapter:5.7.0"
+    implementation "com.mikepenz:fastadapter-extensions-binding:5.7.0" // Hỗ trợ ViewBinding
 }

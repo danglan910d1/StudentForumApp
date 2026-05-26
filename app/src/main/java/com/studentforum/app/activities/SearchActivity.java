@@ -16,9 +16,14 @@ import com.studentforum.app.R;
 import com.studentforum.app.adapters.SearchAdapter;
 import com.studentforum.app.api.ApiClient;
 import com.studentforum.app.api.ApiService;
+import com.studentforum.app.models.Post;
+import com.studentforum.app.models.Topic;
+import com.studentforum.app.models.responses.PostResponse;
+import com.studentforum.app.models.responses.TopicResponse;
 import com.studentforum.app.utils.AuthManager;
 import com.studentforum.app.viewmodels.PostViewModel;
 import com.studentforum.app.viewmodels.ViewModelFactory;
+import java.util.List;
 
 public class SearchActivity extends AppCompatActivity {
     private PostViewModel postViewModel;
@@ -63,7 +68,8 @@ public class SearchActivity extends AppCompatActivity {
                     postViewModel.fetchFeed(1, s.toString());
                 } else {
                     btnClear.setVisibility(View.GONE);
-                    searchAdapter.setPosts(new java.util.ArrayList<>()); // Clear results
+                    // Khi xóa trắng tìm kiếm, tải lại danh sách cơ bản
+                    postViewModel.fetchFeed(1, null);
                 }
             }
 
@@ -76,9 +82,7 @@ public class SearchActivity extends AppCompatActivity {
         });
 
         postViewModel.getPosts().observe(this, posts -> {
-            if (edtSearch.getText().length() > 0) {
-                searchAdapter.setPosts(posts);
-            }
+            searchAdapter.setPosts(posts);
         });
 
         View layoutLoading = findViewById(R.id.layoutLoading);
@@ -86,6 +90,33 @@ public class SearchActivity extends AppCompatActivity {
             if (layoutLoading != null) {
                 layoutLoading.setVisibility(isLoading ? View.VISIBLE : View.GONE);
             }
+        });
+
+        // 1. Fetch some basic posts
+        postViewModel.fetchFeed(1, null);
+
+        // 2. Load real Hot Topics
+        apiService.getTopics().enqueue(new retrofit2.Callback<TopicResponse>() {
+            @Override
+            public void onResponse(retrofit2.Call<TopicResponse> call, retrofit2.Response<TopicResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getTopics() != null) {
+                    android.widget.LinearLayout llHotTopics = findViewById(R.id.llHotTopics);
+                    List<Topic> topics = response.body().getTopics();
+                    if (llHotTopics != null) {
+                        for (int i = 0; i < Math.min(5, topics.size()); i++) {
+                            Topic topic = topics.get(i);
+                            android.widget.TextView tv = new android.widget.TextView(SearchActivity.this);
+                            tv.setText("• " + topic.getName());
+                            tv.setTextSize(13);
+                            tv.setPadding(0, (int)(8 * getResources().getDisplayMetrics().density), 0, 0);
+                            tv.setTextColor(android.graphics.Color.parseColor("#374151"));
+                            llHotTopics.addView(tv);
+                        }
+                    }
+                }
+            }
+            @Override
+            public void onFailure(retrofit2.Call<TopicResponse> call, Throwable t) {}
         });
     }
 }
