@@ -57,6 +57,9 @@ public interface ApiService {
     @GET("topics")
     Call<TopicResponse> getTopics();
 
+    @GET("tags")
+    Call<TagResponse> getTags(@Query("topicId") String topicId);
+
     // --- 7. NOTIFICATIONS ---
     @GET("notifications")
     Call<List<Notification>> getNotifications();

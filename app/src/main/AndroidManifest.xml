@@ -36,6 +36,9 @@
         <activity android:name=".activities.SearchActivity" android:exported="false" />
         <activity android:name=".activities.CreateEditPostActivity" android:exported="false" />
         <activity android:name=".activities.MenuActivity" android:exported="false" />
+        <activity android:name=".activities.SecurityActivity" android:exported="false" />
+        <activity android:name=".activities.AdminApproveListActivity" android:exported="false" />
+        <activity android:name=".activities.AdminApproveDetailActivity" android:exported="false" />
         <!-- Bạn có thể bổ sung TopicsActivity, ProfileActivity... tương tự dòng trên -->
 
     </application>

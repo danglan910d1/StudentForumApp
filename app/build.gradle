@@ -63,4 +63,7 @@ dependencies {
     // 5. FastAdapter (Xử lý danh sách và RecyclerView linh hoạt)
     implementation "com.mikepenz:fastadapter:5.7.0"
     implementation "com.mikepenz:fastadapter-extensions-binding:5.7.0" // Hỗ trợ ViewBinding
+
+    // 6. SwipeRefreshLayout
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 }

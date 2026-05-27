@@ -45,13 +45,11 @@ public class MenuActivity extends AppCompatActivity {
         binding.ivBack.setOnClickListener(v -> finish());
         
         binding.llSecurity.setOnClickListener(v -> {
-            // startActivity(new Intent(MenuActivity.this, SecurityActivity.class));
-            // Sẽ bổ sung sau khi tạo xong SecurityActivity
+            startActivity(new Intent(MenuActivity.this, SecurityActivity.class));
         });
 
         binding.llAdminApprove.setOnClickListener(v -> {
-            // startActivity(new Intent(MenuActivity.this, AdminApproveListActivity.class));
-            // Sẽ bổ sung sau khi tạo xong AdminApproveListActivity
+            startActivity(new Intent(MenuActivity.this, AdminApproveListActivity.class));
         });
 
         binding.llLogout.setOnClickListener(v -> {

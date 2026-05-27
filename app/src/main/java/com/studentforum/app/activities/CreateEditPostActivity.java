@@ -1,252 +1,240 @@
 package com.studentforum.app.activities;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Spinner;
-import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.studentforum.app.R;
+import com.google.android.material.chip.Chip;
 import com.studentforum.app.api.ApiClient;
 import com.studentforum.app.api.ApiService;
-import com.studentforum.app.models.Post;
+import com.studentforum.app.databinding.ActivityCreateEditPostBinding;
+import com.studentforum.app.models.Tag;
 import com.studentforum.app.models.Topic;
-import com.studentforum.app.models.responses.TopicResponse;
 import com.studentforum.app.utils.AuthManager;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class CreateEditPostActivity extends AppCompatActivity {
+    private ActivityCreateEditPostBinding binding;
+    private CreateEditPostViewModel viewModel;
+    
     private String postId;
     private boolean isEditMode = false;
-    private ApiService apiService;
-
-    private TextView tvHeaderTitle, tvBreadcrumb, btnCancel, btnSave, btnDeletePost;
-    private EditText edtTitle, edtContent, edtTags;
-    private ImageView btnBack, ivCoverPreview;
-    private View btnUploadImage;
-    private Spinner spinnerTopic;
-    private Switch switchComments, switchAnonymous;
 
     private List<Topic> topicsList = new ArrayList<>();
     private ArrayAdapter<String> topicAdapter;
+    private ArrayAdapter<String> tagAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_create_edit_post);
+        binding = ActivityCreateEditPostBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        apiService = ApiClient.getClient(new AuthManager(this)).create(ApiService.class);
-        
         if (getIntent() != null && getIntent().hasExtra("POST_ID")) {
             postId = getIntent().getStringExtra("POST_ID");
             isEditMode = true;
         }
 
+        ApiService apiService = ApiClient.getClient(new AuthManager(this)).create(ApiService.class);
+        viewModel = new ViewModelProvider(this, new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+                return (T) new CreateEditPostViewModel(apiService);
+            }
+        }).get(CreateEditPostViewModel.class);
+
         initViews();
         setupMode();
-        fetchTopics();
+        observeViewModel();
+        
+        viewModel.fetchTopics();
     }
 
     private void initViews() {
-        tvHeaderTitle = findViewById(R.id.tvHeaderTitle);
-        tvBreadcrumb = findViewById(R.id.tvBreadcrumb);
-        btnCancel = findViewById(R.id.btnCancel);
-        btnSave = findViewById(R.id.btnSave);
-        btnDeletePost = findViewById(R.id.btnDeletePost);
-        
-        edtTitle = findViewById(R.id.edtTitle);
-        edtContent = findViewById(R.id.edtContent);
-        edtTags = findViewById(R.id.edtTags);
-        
-        btnBack = findViewById(R.id.btnBack);
-        ivCoverPreview = findViewById(R.id.ivCoverPreview);
-        btnUploadImage = findViewById(R.id.btnUploadImage);
-        
-        spinnerTopic = findViewById(R.id.spinnerTopic);
-        switchComments = findViewById(R.id.switchComments);
-        switchAnonymous = findViewById(R.id.switchAnonymous);
-
         topicAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>());
         topicAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerTopic.setAdapter(topicAdapter);
+        binding.spinnerTopic.setAdapter(topicAdapter);
 
-        btnBack.setOnClickListener(v -> finish());
-        btnCancel.setOnClickListener(v -> finish());
+        tagAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
+        binding.edtTagsInput.setAdapter(tagAdapter);
+        binding.edtTagsInput.setEnabled(false);
 
-        btnSave.setOnClickListener(v -> savePost());
-        
-        btnDeletePost.setOnClickListener(v -> {
-            deletePost();
+        binding.edtTagsInput.setOnClickListener(v -> binding.edtTagsInput.showDropDown());
+        binding.edtTagsInput.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                binding.edtTagsInput.showDropDown();
+            }
         });
 
-        btnUploadImage.setOnClickListener(v -> {
+        binding.edtTagsInput.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedTag = tagAdapter.getItem(position);
+            if (selectedTag != null) {
+                addChipToGroup(selectedTag);
+            }
+            binding.edtTagsInput.setText("");
+        });
+
+        binding.edtTagsInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String text = s.toString();
+                if (text.endsWith(" ")) {
+                    String newTag = text.trim();
+                    if (!newTag.isEmpty()) {
+                        addChipToGroup(newTag);
+                    }
+                    binding.edtTagsInput.setText("");
+                }
+            }
+        });
+
+        binding.spinnerTopic.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (!topicsList.isEmpty()) {
+                    String topicId = topicsList.get(position).getId();
+                    binding.edtTagsInput.setEnabled(true);
+                    binding.edtTagsInput.setHint("Nhập thẻ cho " + topicsList.get(position).getName());
+                    viewModel.fetchTags(topicId);
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        binding.btnBack.setOnClickListener(v -> finish());
+        binding.btnCancel.setOnClickListener(v -> finish());
+        binding.btnSave.setOnClickListener(v -> validateAndSavePost());
+        
+        binding.btnDeletePost.setOnClickListener(v -> {
+            Toast.makeText(this, "Chức năng xóa chưa được cập nhật", Toast.LENGTH_SHORT).show();
+        });
+        
+        binding.btnUploadImage.setOnClickListener(v -> {
             Toast.makeText(this, "Tính năng tải ảnh đang cập nhật...", Toast.LENGTH_SHORT).show();
         });
     }
 
+    private void addChipToGroup(String text) {
+        if (binding.chipGroupTags.getChildCount() >= 5) {
+            Toast.makeText(this, "Chỉ được nhập tối đa 5 thẻ!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        for (int i = 0; i < binding.chipGroupTags.getChildCount(); i++) {
+            Chip chip = (Chip) binding.chipGroupTags.getChildAt(i);
+            if (chip.getText().toString().equalsIgnoreCase(text)) {
+                return; // Ngăn trùng lặp
+            }
+        }
+
+        Chip chip = new Chip(this);
+        chip.setText(text);
+        chip.setCloseIconVisible(true);
+        chip.setOnCloseIconClickListener(v -> binding.chipGroupTags.removeView(chip));
+        binding.chipGroupTags.addView(chip);
+    }
+
     private void setupMode() {
         if (isEditMode) {
-            tvHeaderTitle.setText("Chỉnh sửa bài viết");
-            tvBreadcrumb.setText("Bài viết của tôi > Chỉnh sửa bài viết");
-            btnDeletePost.setVisibility(View.VISIBLE);
+            binding.tvHeaderTitle.setText("Chỉnh sửa bài viết");
+            binding.btnDeletePost.setVisibility(View.VISIBLE);
+            viewModel.fetchPostData(postId);
         } else {
-            tvHeaderTitle.setText("Tạo bài viết mới");
-            tvBreadcrumb.setText("Bài viết của tôi > Tạo bài viết mới");
-            btnDeletePost.setVisibility(View.GONE);
+            binding.tvHeaderTitle.setText("Tạo bài viết mới");
+            binding.btnDeletePost.setVisibility(View.GONE);
         }
     }
 
-    private void fetchTopics() {
-        apiService.getTopics().enqueue(new Callback<TopicResponse>() {
-            @Override
-            public void onResponse(Call<TopicResponse> call, Response<TopicResponse> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().getTopics() != null) {
-                    topicsList = response.body().getTopics();
-                    topicAdapter.clear();
-                    for (Topic t : topicsList) {
-                        topicAdapter.add(t.getName());
-                    }
-                    topicAdapter.notifyDataSetChanged();
-                    
-                    if (isEditMode) {
-                        fetchPostData();
+    private void observeViewModel() {
+        viewModel.getTopicsResult().observe(this, topics -> {
+            topicsList = topics;
+            topicAdapter.clear();
+            for (Topic t : topics) {
+                topicAdapter.add(t.getName());
+            }
+            topicAdapter.notifyDataSetChanged();
+        });
+
+        viewModel.getTagsResult().observe(this, tags -> {
+            tagAdapter.clear();
+            for (Tag t : tags) {
+                tagAdapter.add(t.getName());
+            }
+            tagAdapter.notifyDataSetChanged();
+        });
+
+        viewModel.getPostResult().observe(this, post -> {
+            binding.edtTitle.setText(post.getTitle());
+            binding.edtContent.setText(post.getContent());
+            
+            if (post.getTags() != null) {
+                binding.chipGroupTags.removeAllViews();
+                for (Tag tag : post.getTags()) {
+                    addChipToGroup(tag.getName());
+                }
+            }
+            
+            if (post.getTopic() != null) {
+                for (int i = 0; i < topicsList.size(); i++) {
+                    if (topicsList.get(i).getId().equals(post.getTopic().getId())) {
+                        binding.spinnerTopic.setSelection(i);
+                        break;
                     }
                 }
             }
+        });
 
-            @Override
-            public void onFailure(Call<TopicResponse> call, Throwable t) {
-                Toast.makeText(CreateEditPostActivity.this, "Lỗi tải chủ đề", Toast.LENGTH_SHORT).show();
+        viewModel.getSaveSuccess().observe(this, success -> {
+            if (success) {
+                Toast.makeText(this, "Cập nhật bài viết thành công", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
+
+        viewModel.getErrorMessage().observe(this, msg -> {
+            if (msg != null && !msg.isEmpty()) {
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                viewModel.clearError();
             }
         });
     }
 
-    private void fetchPostData() {
-        apiService.getPostDetail(postId).enqueue(new Callback<Post>() {
-            @Override
-            public void onResponse(Call<Post> call, Response<Post> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    Post post = response.body();
-                    edtTitle.setText(post.getTitle());
-                    edtContent.setText(post.getContent());
-                    
-                    // Set tags
-                    if (post.getTags() != null) {
-                        List<String> tagNames = new ArrayList<>();
-                        for (com.studentforum.app.models.Tag tag : post.getTags()) {
-                            tagNames.add(tag.getName());
-                        }
-                        edtTags.setText(android.text.TextUtils.join(", ", tagNames));
-                    }
-                    
-                    // Set topic
-                    if (post.getTopic() != null) {
-                        for (int i = 0; i < topicsList.size(); i++) {
-                            if (topicsList.get(i).getId().equals(post.getTopic().getId())) {
-                                spinnerTopic.setSelection(i);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            @Override
-            public void onFailure(Call<Post> call, Throwable t) {
-                Toast.makeText(CreateEditPostActivity.this, "Lỗi tải bài viết", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+    private void validateAndSavePost() {
+        String title = binding.edtTitle.getText().toString().trim();
+        String content = binding.edtContent.getText().toString().trim();
 
-    private void savePost() {
-        String title = edtTitle.getText().toString().trim();
-        String content = edtContent.getText().toString().trim();
-        String tagsInput = edtTags.getText().toString().trim();
-        
         if (title.isEmpty() || content.isEmpty() || topicsList.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập đủ Tiêu đề, Nội dung và Chủ đề", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        String topicId = topicsList.get(binding.spinnerTopic.getSelectedItemPosition()).getId();
         
-        String topicId = topicsList.get(spinnerTopic.getSelectedItemPosition()).getId();
-        
-        List<String> tags = new ArrayList<>();
-        if (!tagsInput.isEmpty()) {
-            for (String tag : tagsInput.split(",")) {
-                tags.add(tag.trim());
-            }
+        List<String> finalTags = new ArrayList<>();
+        for (int i = 0; i < binding.chipGroupTags.getChildCount(); i++) {
+            Chip chip = (Chip) binding.chipGroupTags.getChildAt(i);
+            finalTags.add(chip.getText().toString());
         }
 
-        Map<String, Object> postData = new HashMap<>();
-        postData.put("title", title);
-        postData.put("content", content);
-        postData.put("topicId", topicId);
-        postData.put("tags", tags);
-
-        if (isEditMode) {
-            apiService.updatePost(postId, postData).enqueue(new Callback<Post>() {
-                @Override
-                public void onResponse(Call<Post> call, Response<Post> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(CreateEditPostActivity.this, "Cập nhật bài viết thành công", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Toast.makeText(CreateEditPostActivity.this, "Lỗi cập nhật", Toast.LENGTH_SHORT).show();
-                    }
-                }
-                @Override
-                public void onFailure(Call<Post> call, Throwable t) {
-                    Toast.makeText(CreateEditPostActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
-                }
-            });
-        } else {
-            apiService.createPost(postData).enqueue(new Callback<Post>() {
-                @Override
-                public void onResponse(Call<Post> call, Response<Post> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(CreateEditPostActivity.this, "Đăng bài viết thành công", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Toast.makeText(CreateEditPostActivity.this, "Lỗi đăng bài", Toast.LENGTH_SHORT).show();
-                    }
-                }
-                @Override
-                public void onFailure(Call<Post> call, Throwable t) {
-                    Toast.makeText(CreateEditPostActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-    }
-    
-    private void deletePost() {
-        if (!isEditMode || postId == null) return;
-        apiService.deletePost(postId).enqueue(new Callback<okhttp3.ResponseBody>() {
-            @Override
-            public void onResponse(Call<okhttp3.ResponseBody> call, Response<okhttp3.ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    Toast.makeText(CreateEditPostActivity.this, "Đã xóa bài viết", Toast.LENGTH_SHORT).show();
-                    finish();
-                } else {
-                    Toast.makeText(CreateEditPostActivity.this, "Không thể xóa", Toast.LENGTH_SHORT).show();
-                }
-            }
-            @Override
-            public void onFailure(Call<okhttp3.ResponseBody> call, Throwable t) {
-                Toast.makeText(CreateEditPostActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
-            }
-        });
+        viewModel.savePost(title, content, topicId, finalTags, isEditMode, postId);
     }
 }
