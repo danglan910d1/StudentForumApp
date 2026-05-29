@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">StudentForum</string>
+    <string-array name="tag_approval_actions">
+        <item>1. Duyệt vào Chuyên mục hiện tại</item>
+        <item>2. Duyệt làm Tag chung (Global)</item>
+        <item>3. Duyệt vào Chuyên mục (Nhưng không gắn vào bài)</item>
+        <item>4. Duyệt làm Tag chung (Nhưng không gắn vào bài)</item>
+        <item>5. Từ chối hoàn toàn Tag này</item>
+    </string-array>
 </resources>

@@ -64,10 +64,9 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onAuthorClick(com.studentforum.app.models.Post post) {
                 if (post.getAuthor() != null) {
-                    Toast.makeText(HomeActivity.this, "Chuyển sang Profile: " + post.getAuthor().getName(), Toast.LENGTH_SHORT).show();
-                    // Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
-                    // intent.putExtra("USER_ID", post.getAuthor().getId());
-                    // startActivity(intent);
+                    Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
+                    intent.putExtra("USER_ID", post.getAuthor().getId());
+                    startActivity(intent);
                 }
             }
 
@@ -188,8 +187,16 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        // Fetch Data lần đầu
-        postViewModel.fetchFeed(currentPage);
+        // Fetch Data sẽ được gọi ở onResume
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (postViewModel != null) {
+            postViewModel.clearCache();
+            postViewModel.fetchFeed(currentPage);
+        }
     }
     
     private void renderPagination() {
@@ -258,6 +265,32 @@ public class HomeActivity extends AppCompatActivity {
     }
     
     private void setupHeader() {
+        // Thiết lập Bottom Navigation
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
+        if (bottomNav != null) {
+            bottomNav.setSelectedItemId(R.id.nav_home);
+            bottomNav.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.nav_home) {
+                    return true; // Already here
+                } else if (itemId == R.id.nav_profile) {
+                    Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
+                    intent.putExtra("USER_ID", authManager.getUserId());
+                    startActivity(intent);
+                    return false; // Don't highlight unless we actually switch and kill this activity
+                } else if (itemId == R.id.nav_topics) {
+                    // Placeholder cho màn hình Topics
+                    Toast.makeText(HomeActivity.this, "Màn hình Chuyên mục", Toast.LENGTH_SHORT).show();
+                    return false;
+                } else if (itemId == R.id.nav_posts) {
+                    // Placeholder cho màn hình Posts
+                    Toast.makeText(HomeActivity.this, "Màn hình Bài viết", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+                return false;
+            });
+        }
+
         // Nút Hamburger mở Drawer
         ImageView btnMenu = findViewById(R.id.btnMenu);
         btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));

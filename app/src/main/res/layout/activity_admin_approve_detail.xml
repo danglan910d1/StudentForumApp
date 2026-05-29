@@ -4,45 +4,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F9FAFB">
+    android:background="@android:color/black"
+    android:fitsSystemWindows="true">
 
     <!-- Header -->
-    <LinearLayout
+    <include
+        android:id="@+id/header"
+        layout="@layout/component_header_back"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="16dp"
-        android:background="@android:color/white"
-        android:elevation="2dp">
-
-        <ImageView
-            android:id="@+id/ivBack"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="12dp"
-            android:src="@android:drawable/ic_menu_revert"
-            android:contentDescription="Quay lại"
-            app:tint="#111827"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Chi tiết kiểm duyệt"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="#111827"
-            android:layout_marginStart="16dp"/>
-    </LinearLayout>
+        android:layout_height="wrap_content" />
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:background="#F9FAFB">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -92,6 +69,75 @@
                         android:textColor="#374151"
                         android:textSize="16sp"
                         android:lineSpacingExtra="4dp"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+            <!-- Phần Pending Tags -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cvPendingTags"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#F59E0B"
+                app:strokeWidth="1dp"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Thẻ (Tags) đang chờ duyệt:"
+                        android:textColor="#B45309"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp"/>
+
+                    <LinearLayout
+                        android:id="@+id/llPendingTagsContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Phần Existing Tags -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cvExistingTags"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#10B981"
+                app:strokeWidth="1dp"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Thẻ (Tags) hiện có (chọn để giữ lại):"
+                        android:textColor="#047857"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp"/>
+
+                    <LinearLayout
+                        android:id="@+id/llExistingTagsContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
         </LinearLayout>
@@ -166,3 +212,6 @@
     </LinearLayout>
 
 </LinearLayout>
+
+
+

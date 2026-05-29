@@ -63,9 +63,26 @@ public class CreateEditPostActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        topicAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>());
-        topicAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        topicAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
         binding.spinnerTopic.setAdapter(topicAdapter);
+        binding.spinnerTopic.setFocusable(false);
+        binding.spinnerTopic.setOnClickListener(v -> binding.spinnerTopic.showDropDown());
+        
+        binding.edtTitle.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(android.text.Editable s) {
+                binding.tvErrorTitle.setVisibility(android.view.View.GONE);
+            }
+        });
+
+        binding.edtContent.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(android.text.Editable s) {
+                binding.tvErrorContent.setVisibility(android.view.View.GONE);
+            }
+        });
 
         tagAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
         binding.edtTagsInput.setAdapter(tagAdapter);
@@ -106,24 +123,20 @@ public class CreateEditPostActivity extends AppCompatActivity {
             }
         });
 
-        binding.spinnerTopic.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (!topicsList.isEmpty()) {
-                    String topicId = topicsList.get(position).getId();
-                    binding.edtTagsInput.setEnabled(true);
-                    binding.edtTagsInput.setHint("Nhập thẻ cho " + topicsList.get(position).getName());
-                    viewModel.fetchTags(topicId);
-                }
+        binding.spinnerTopic.setOnItemClickListener((parent, view, position, id) -> {
+            binding.tvErrorTopic.setVisibility(android.view.View.GONE);
+            if (!topicsList.isEmpty()) {
+                String topicId = topicsList.get(position).getId();
+                binding.edtTagsInput.setEnabled(true);
+                binding.edtTagsInput.setHint("Nhập thẻ cho " + topicsList.get(position).getName());
+                viewModel.fetchTags(topicId);
             }
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
         });
 
-        binding.btnBack.setOnClickListener(v -> finish());
+        binding.header.btnBack.setOnClickListener(v -> finish());
         binding.btnCancel.setOnClickListener(v -> finish());
         binding.btnSave.setOnClickListener(v -> validateAndSavePost());
-        
+
         binding.btnDeletePost.setOnClickListener(v -> {
             Toast.makeText(this, "Chức năng xóa chưa được cập nhật", Toast.LENGTH_SHORT).show();
         });
@@ -155,11 +168,11 @@ public class CreateEditPostActivity extends AppCompatActivity {
 
     private void setupMode() {
         if (isEditMode) {
-            binding.tvHeaderTitle.setText("Chỉnh sửa bài viết");
+            binding.header.tvHeaderTitle.setText("Chỉnh sửa bài viết");
             binding.btnDeletePost.setVisibility(View.VISIBLE);
             viewModel.fetchPostData(postId);
         } else {
-            binding.tvHeaderTitle.setText("Tạo bài viết mới");
+            binding.header.tvHeaderTitle.setText("Tạo bài viết mới");
             binding.btnDeletePost.setVisibility(View.GONE);
         }
     }
@@ -196,7 +209,7 @@ public class CreateEditPostActivity extends AppCompatActivity {
             if (post.getTopic() != null) {
                 for (int i = 0; i < topicsList.size(); i++) {
                     if (topicsList.get(i).getId().equals(post.getTopic().getId())) {
-                        binding.spinnerTopic.setSelection(i);
+                        binding.spinnerTopic.setText(topicsList.get(i).getName(), false);
                         break;
                     }
                 }
@@ -221,13 +234,54 @@ public class CreateEditPostActivity extends AppCompatActivity {
     private void validateAndSavePost() {
         String title = binding.edtTitle.getText().toString().trim();
         String content = binding.edtContent.getText().toString().trim();
+        String topicName = binding.spinnerTopic.getText().toString();
 
-        if (title.isEmpty() || content.isEmpty() || topicsList.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập đủ Tiêu đề, Nội dung và Chủ đề", Toast.LENGTH_SHORT).show();
-            return;
+        boolean isValid = true;
+        
+        binding.tvErrorTopic.setVisibility(View.GONE);
+        binding.tvErrorTitle.setVisibility(View.GONE);
+        binding.tvErrorContent.setVisibility(View.GONE);
+
+        if (topicName.isEmpty()) {
+            binding.tvErrorTopic.setText("Vui lòng chọn chuyên mục");
+            binding.tvErrorTopic.setVisibility(View.VISIBLE);
+            isValid = false;
         }
 
-        String topicId = topicsList.get(binding.spinnerTopic.getSelectedItemPosition()).getId();
+        if (title.isEmpty()) {
+            binding.tvErrorTitle.setText("Vui lòng nhập tiêu đề bài viết");
+            binding.tvErrorTitle.setVisibility(View.VISIBLE);
+            isValid = false;
+        } else if (title.length() < 5) {
+            binding.tvErrorTitle.setText("Tiêu đề bài viết phải dài ít nhất 5 ký tự");
+            binding.tvErrorTitle.setVisibility(View.VISIBLE);
+            isValid = false;
+        }
+
+        if (content.isEmpty()) {
+            binding.tvErrorContent.setText("Vui lòng nhập nội dung bài viết");
+            binding.tvErrorContent.setVisibility(View.VISIBLE);
+            isValid = false;
+        } else if (content.length() < 10) {
+            binding.tvErrorContent.setText("Nội dung bài viết phải dài ít nhất 10 ký tự");
+            binding.tvErrorContent.setVisibility(View.VISIBLE);
+            isValid = false;
+        }
+        
+        if (!isValid) return;
+
+        String topicId = "";
+        for (Topic t : topicsList) {
+            if (t.getName().equals(topicName)) {
+                topicId = t.getId();
+                break;
+            }
+        }
+        
+        if (topicId.isEmpty()) {
+            Toast.makeText(this, "Vui lòng chọn Chuyên mục hợp lệ", Toast.LENGTH_SHORT).show();
+            return;
+        }
         
         List<String> finalTags = new ArrayList<>();
         for (int i = 0; i < binding.chipGroupTags.getChildCount(); i++) {
@@ -238,3 +292,4 @@ public class CreateEditPostActivity extends AppCompatActivity {
         viewModel.savePost(title, content, topicId, finalTags, isEditMode, postId);
     }
 }
+

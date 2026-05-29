@@ -176,6 +176,16 @@ public class PostDetailActivity extends AppCompatActivity implements CommentItem
             binding.ivAuthorAvatar.setImageResource(R.drawable.ic_profile);
         }
 
+        if (post.getAuthor() != null) {
+            View.OnClickListener profileClickListener = v -> {
+                Intent intent = new Intent(PostDetailActivity.this, ProfileActivity.class);
+                intent.putExtra("USER_ID", post.getAuthor().getId());
+                startActivity(intent);
+            };
+            binding.ivAuthorAvatar.setOnClickListener(profileClickListener);
+            binding.tvAuthorName.setOnClickListener(profileClickListener);
+        }
+
         if (currentUserId != null && post.getAuthor() != null && currentUserId.equals(post.getAuthor().getId())) {
             binding.ivMoreOptions.setVisibility(View.VISIBLE);
             binding.ivMoreOptions.setOnClickListener(v -> showOwnerMenu(post));

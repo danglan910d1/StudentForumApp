@@ -36,9 +36,13 @@ public class MenuActivity extends AppCompatActivity {
         if (authManager.isAdmin()) {
             binding.llAdminApprove.setVisibility(View.VISIBLE);
             binding.vAdminDivider.setVisibility(View.VISIBLE);
+            binding.llSystemConfig.setVisibility(View.VISIBLE);
+            binding.vSystemConfigDivider.setVisibility(View.VISIBLE);
         } else {
             binding.llAdminApprove.setVisibility(View.GONE);
             binding.vAdminDivider.setVisibility(View.GONE);
+            binding.llSystemConfig.setVisibility(View.GONE);
+            binding.vSystemConfigDivider.setVisibility(View.GONE);
         }
 
         // Click Listeners
@@ -46,6 +50,16 @@ public class MenuActivity extends AppCompatActivity {
         
         binding.llSecurity.setOnClickListener(v -> {
             startActivity(new Intent(MenuActivity.this, SecurityActivity.class));
+        });
+
+        binding.llSystemConfig.setOnClickListener(v -> {
+            // Placeholder for SystemConfigActivity
+        });
+
+        binding.ivAvatar.setOnClickListener(v -> {
+            Intent intent = new Intent(MenuActivity.this, ProfileActivity.class);
+            intent.putExtra("USER_ID", authManager.getUserId());
+            startActivity(intent);
         });
 
         binding.llAdminApprove.setOnClickListener(v -> {
@@ -61,3 +75,4 @@ public class MenuActivity extends AppCompatActivity {
         });
     }
 }
+

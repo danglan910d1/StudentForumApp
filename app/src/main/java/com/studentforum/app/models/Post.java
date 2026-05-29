@@ -17,6 +17,8 @@ public class Post implements Serializable {
     private Topic topic;
     @SerializedName("tags")
     private List<Tag> tags;
+    @SerializedName("pending_tags")
+    private List<Tag> pendingTags;
     @SerializedName("status")
     private String status;
     @SerializedName("views_count")
@@ -42,6 +44,7 @@ public class Post implements Serializable {
     public User getAuthor() { return author; }
     public Topic getTopic() { return topic; }
     public List<Tag> getTags() { return tags; }
+    public List<Tag> getPendingTags() { return pendingTags; }
     public String getStatus() { return status; }
     public int getViewsCount() { return viewsCount; }
     public int getLikesCount() { return likesCount; }

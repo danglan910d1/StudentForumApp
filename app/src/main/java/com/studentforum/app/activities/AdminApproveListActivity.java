@@ -46,7 +46,8 @@ public class AdminApproveListActivity extends AppCompatActivity {
         authManager = new AuthManager(this);
         apiService = ApiClient.getClient(authManager).create(ApiService.class);
 
-        binding.ivBack.setOnClickListener(v -> finish());
+        binding.header.btnBack.setOnClickListener(v -> finish());
+        binding.header.tvHeaderTitle.setText("Duyệt Bài Viết");
 
         setupRecyclerView();
 
@@ -101,7 +102,7 @@ public class AdminApproveListActivity extends AppCompatActivity {
                 }
             }
 
-            @Override
+                        @Override
             public void onFailure(Call<PostResponse> call, Throwable t) {
                 binding.swipeRefreshLayout.setRefreshing(false);
                 binding.progressBar.setVisibility(View.GONE);

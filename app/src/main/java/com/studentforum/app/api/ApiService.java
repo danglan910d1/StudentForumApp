@@ -28,6 +28,9 @@ public interface ApiService {
     @GET("posts/{id}")
     Call<Post> getPostDetail(@Path("id") String id);
 
+    @GET("posts/admin/{id}")
+    Call<Post> getAdminPostDetail(@Path("id") String id);
+
     // --- 3. CREATE / EDIT POSTS ---
     @POST("posts")
     Call<Post> createPost(@Body Map<String, Object> postData);

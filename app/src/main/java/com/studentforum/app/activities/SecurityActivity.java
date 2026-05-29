@@ -2,6 +2,7 @@ package com.studentforum.app.activities;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.studentforum.app.api.ApiClient;
@@ -25,27 +26,74 @@ public class SecurityActivity extends AppCompatActivity {
         binding = ActivitySecurityBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        binding.ivBack.setOnClickListener(v -> finish());
+        binding.header.btnBack.setOnClickListener(v -> finish());
+        binding.header.tvHeaderTitle.setText("Cài đặt bảo mật");
+
+        binding.edtCurrentPassword.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(android.text.Editable s) {
+                binding.tvErrorCurrentPassword.setVisibility(View.GONE);
+                binding.llBackendError.setVisibility(View.GONE);
+            }
+        });
+
+        binding.edtNewPassword.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(android.text.Editable s) {
+                binding.tvErrorNewPassword.setVisibility(View.GONE);
+                binding.llBackendError.setVisibility(View.GONE);
+            }
+        });
+
+        binding.edtConfirmPassword.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override public void afterTextChanged(android.text.Editable s) {
+                binding.tvErrorConfirmPassword.setVisibility(View.GONE);
+                binding.llBackendError.setVisibility(View.GONE);
+            }
+        });
 
         binding.btnChangePassword.setOnClickListener(v -> {
             String currentPassword = binding.edtCurrentPassword.getText().toString();
             String newPassword = binding.edtNewPassword.getText().toString();
             String confirmPassword = binding.edtConfirmPassword.getText().toString();
 
-            if (TextUtils.isEmpty(currentPassword) || TextUtils.isEmpty(newPassword) || TextUtils.isEmpty(confirmPassword)) {
-                Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
-                return;
+            boolean isValid = true;
+            binding.tvErrorCurrentPassword.setVisibility(View.GONE);
+            binding.tvErrorNewPassword.setVisibility(View.GONE);
+            binding.tvErrorConfirmPassword.setVisibility(View.GONE);
+            binding.llBackendError.setVisibility(View.GONE);
+
+            if (TextUtils.isEmpty(currentPassword)) {
+                binding.tvErrorCurrentPassword.setText("Vui lòng nhập mật khẩu hiện tại");
+                binding.tvErrorCurrentPassword.setVisibility(View.VISIBLE);
+                isValid = false;
             }
 
-            if (!newPassword.equals(confirmPassword)) {
-                Toast.makeText(this, "Mật khẩu xác nhận không khớp", Toast.LENGTH_SHORT).show();
-                return;
+            if (TextUtils.isEmpty(newPassword)) {
+                binding.tvErrorNewPassword.setText("Vui lòng nhập mật khẩu mới");
+                binding.tvErrorNewPassword.setVisibility(View.VISIBLE);
+                isValid = false;
+            } else if (newPassword.length() < 6) {
+                binding.tvErrorNewPassword.setText("Mật khẩu mới phải có ít nhất 6 ký tự");
+                binding.tvErrorNewPassword.setVisibility(View.VISIBLE);
+                isValid = false;
             }
 
-            if (newPassword.length() < 6) {
-                Toast.makeText(this, "Mật khẩu mới phải có ít nhất 6 ký tự", Toast.LENGTH_SHORT).show();
-                return;
+            if (TextUtils.isEmpty(confirmPassword)) {
+                binding.tvErrorConfirmPassword.setText("Vui lòng xác nhận mật khẩu mới");
+                binding.tvErrorConfirmPassword.setVisibility(View.VISIBLE);
+                isValid = false;
+            } else if (!newPassword.equals(confirmPassword)) {
+                binding.tvErrorConfirmPassword.setText("Mật khẩu xác nhận không khớp");
+                binding.tvErrorConfirmPassword.setVisibility(View.VISIBLE);
+                isValid = false;
             }
+
+            if (!isValid) return;
 
             changePassword(currentPassword, newPassword);
         });
@@ -67,14 +115,17 @@ public class SecurityActivity extends AppCompatActivity {
                     binding.edtCurrentPassword.setText("");
                     binding.edtNewPassword.setText("");
                     binding.edtConfirmPassword.setText("");
+                    binding.llBackendError.setVisibility(View.GONE);
                 } else {
-                    Toast.makeText(SecurityActivity.this, "Đổi mật khẩu thất bại. Kiểm tra lại mật khẩu hiện tại.", Toast.LENGTH_SHORT).show();
+                    binding.tvBackendError.setText("Đổi mật khẩu thất bại. Kiểm tra lại mật khẩu hiện tại.");
+                    binding.llBackendError.setVisibility(View.VISIBLE);
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(SecurityActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                binding.tvBackendError.setText("Lỗi kết nối đến máy chủ");
+                binding.llBackendError.setVisibility(View.VISIBLE);
             }
         });
     }

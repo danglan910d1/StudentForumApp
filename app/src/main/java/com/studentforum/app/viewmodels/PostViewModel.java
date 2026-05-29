@@ -59,6 +59,10 @@ public class PostViewModel extends ViewModel {
 
     private static final java.util.Map<String, com.studentforum.app.models.responses.PostResponse> listCache = new java.util.HashMap<>();
 
+    public void clearCache() {
+        listCache.clear();
+    }
+
     public void fetchFeed(int page, String query) {
         String cacheKey = "feed_" + page + "_" + (query != null ? query : "");
         if (listCache.containsKey(cacheKey)) {

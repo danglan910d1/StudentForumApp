@@ -2,7 +2,9 @@ package com.studentforum.app.activities;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.ViewModel;
+import android.util.Pair;
 
 import com.studentforum.app.api.ApiService;
 import com.studentforum.app.models.Post;
@@ -25,16 +27,32 @@ public class CreateEditPostViewModel extends ViewModel {
     private final MutableLiveData<List<Topic>> topicsResult = new MutableLiveData<>();
     private final MutableLiveData<List<Tag>> tagsResult = new MutableLiveData<>();
     private final MutableLiveData<Post> postResult = new MutableLiveData<>();
+    private final MediatorLiveData<Pair<Post, List<Topic>>> postAndTopicsResult = new MediatorLiveData<>();
     private final MutableLiveData<Boolean> saveSuccess = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
     public CreateEditPostViewModel(ApiService apiService) {
         this.apiService = apiService;
+        
+        postAndTopicsResult.addSource(postResult, post -> {
+            List<Topic> topics = topicsResult.getValue();
+            if (post != null && topics != null) {
+                postAndTopicsResult.setValue(new Pair<>(post, topics));
+            }
+        });
+        
+        postAndTopicsResult.addSource(topicsResult, topics -> {
+            Post post = postResult.getValue();
+            if (post != null && topics != null) {
+                postAndTopicsResult.setValue(new Pair<>(post, topics));
+            }
+        });
     }
 
     public LiveData<List<Topic>> getTopicsResult() { return topicsResult; }
     public LiveData<List<Tag>> getTagsResult() { return tagsResult; }
     public LiveData<Post> getPostResult() { return postResult; }
+    public LiveData<Pair<Post, List<Topic>>> getPostAndTopicsResult() { return postAndTopicsResult; }
     public LiveData<Boolean> getSaveSuccess() { return saveSuccess; }
     public LiveData<String> getErrorMessage() { return errorMessage; }
 
