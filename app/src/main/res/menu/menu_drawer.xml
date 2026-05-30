@@ -11,8 +11,8 @@
             android:title="Chủ đề" />
 
         <item
-            android:id="@+id/nav_posts"
-            android:icon="@drawable/ic_bookmark"
-            android:title="Bài viết" />
+            android:id="@+id/nav_profile"
+            android:icon="@drawable/ic_profile"
+            android:title="Hồ sơ" />
     </group>
 </menu>

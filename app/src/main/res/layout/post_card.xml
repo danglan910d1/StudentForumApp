@@ -85,13 +85,10 @@
             app:layout_constraintBottom_toBottomOf="parent">
 
             <!-- Author Info -->
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/ivAuthorAvatar"
+            <com.studentforum.app.components.AuthorAvatarView
+                android:id="@+id/authorAvatarView"
                 android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_profile"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full" />
+                android:layout_height="24dp" />
 
             <TextView
                 android:id="@+id/tvAuthorName"
@@ -99,7 +96,7 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:text="Đặng Thị Ngọc Lan"
+                android:text="Người dùng ẩn danh"
                 android:textColor="#374151"
                 android:textSize="12sp" />
 

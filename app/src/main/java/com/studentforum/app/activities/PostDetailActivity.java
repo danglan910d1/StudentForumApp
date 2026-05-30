@@ -166,14 +166,10 @@ public class PostDetailActivity extends AppCompatActivity implements CommentItem
             binding.ivCoverImage.setImageResource(R.drawable.bg_library);
         }
 
-        if (post.getAuthor() != null && post.getAuthor().getAvatar() != null && !post.getAuthor().getAvatar().isEmpty()) {
-            Glide.with(this)
-                    .load(AppUtils.getAssetUrl(post.getAuthor().getAvatar()))
-                    .placeholder(R.drawable.ic_profile)
-                    .circleCrop()
-                    .into(binding.ivAuthorAvatar);
+        if (post.getAuthor() != null) {
+            binding.authorAvatarView.setAuthor(post.getAuthor());
         } else {
-            binding.ivAuthorAvatar.setImageResource(R.drawable.ic_profile);
+            binding.authorAvatarView.setAuthor(null);
         }
 
         if (post.getAuthor() != null) {
@@ -182,7 +178,6 @@ public class PostDetailActivity extends AppCompatActivity implements CommentItem
                 intent.putExtra("USER_ID", post.getAuthor().getId());
                 startActivity(intent);
             };
-            binding.ivAuthorAvatar.setOnClickListener(profileClickListener);
             binding.tvAuthorName.setOnClickListener(profileClickListener);
         }
 

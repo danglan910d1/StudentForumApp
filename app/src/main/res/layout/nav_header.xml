@@ -6,6 +6,9 @@
     android:gravity="bottom"
     android:orientation="vertical"
     android:padding="16dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <ImageView

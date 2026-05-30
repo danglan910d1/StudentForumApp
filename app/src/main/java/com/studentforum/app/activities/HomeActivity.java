@@ -279,8 +279,8 @@ public class HomeActivity extends AppCompatActivity {
                     startActivity(intent);
                     return false; // Don't highlight unless we actually switch and kill this activity
                 } else if (itemId == R.id.nav_topics) {
-                    // Placeholder cho màn hình Topics
-                    Toast.makeText(HomeActivity.this, "Màn hình Chuyên mục", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(HomeActivity.this, TopicActivity.class);
+                    startActivity(intent);
                     return false;
                 } else if (itemId == R.id.nav_posts) {
                     // Placeholder cho màn hình Posts

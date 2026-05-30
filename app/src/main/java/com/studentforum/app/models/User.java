@@ -33,4 +33,10 @@ public class User implements Serializable {
     public void setStatus(String status) { this.status = status; }
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
+    
+    @SerializedName("createdAt")
+    private String createdAt;
+    
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 }

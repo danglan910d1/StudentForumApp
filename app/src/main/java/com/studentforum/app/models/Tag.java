@@ -11,7 +11,11 @@ public class Tag implements Serializable {
     @SerializedName("slug")
     private String slug;
 
+    @SerializedName("topic")
+    private Topic topic;
+
     public String getId() { return id; }
     public String getName() { return name; }
     public String getSlug() { return slug; }
+    public Topic getTopic() { return topic; }
 }

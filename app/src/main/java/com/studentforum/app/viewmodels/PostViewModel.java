@@ -94,9 +94,9 @@ public class PostViewModel extends ViewModel {
         });
     }
 
-    public void fetchMyPosts(String authorId) {
+    public void fetchMyPosts(String authorId, boolean isMyProfile) {
         loading.setValue(true);
-        apiService.getMyPosts(authorId).enqueue(new Callback<PostResponse>() {
+        apiService.getMyPosts(authorId, isMyProfile, null).enqueue(new Callback<PostResponse>() {
             @Override
             public void onResponse(Call<PostResponse> call, Response<PostResponse> response) {
                 loading.setValue(false);

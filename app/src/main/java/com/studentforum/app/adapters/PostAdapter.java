@@ -88,19 +88,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         } else {
             holder.tvCategory.setVisibility(View.GONE);
         }
-        
+        holder.authorAvatarView.setAuthor(post.getAuthor());
         if (post.getAuthor() != null) {
             holder.tvAuthorName.setText(post.getAuthor().getName());
-            if (post.getAuthor().getAvatar() != null && !post.getAuthor().getAvatar().isEmpty()) {
-                String avatarUrl = com.studentforum.app.utils.AppUtils.getAssetUrl(post.getAuthor().getAvatar());
-                com.bumptech.glide.Glide.with(context)
-                        .load(avatarUrl)
-                        .placeholder(R.drawable.ic_profile)
-                        .circleCrop()
-                        .into(holder.ivAuthorAvatar);
-            } else {
-                holder.ivAuthorAvatar.setImageResource(R.drawable.ic_profile);
-            }
+        } else {
+            holder.tvAuthorName.setText("Người dùng ẩn danh");
         }
 
         // --- Logic Click riêng biệt ---
@@ -112,7 +104,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             if (listener != null) listener.onAuthorClick(post);
         };
         holder.tvAuthorName.setOnClickListener(authorClickListener);
-        holder.ivAuthorAvatar.setOnClickListener(authorClickListener);
 
         holder.icLike.setOnClickListener(v -> {
             // 1. Optimistic Update
@@ -143,7 +134,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
     public static class PostViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvContent, tvCategory, tvAuthorName, tvLikeCount, tvCommentCount, tvTime;
-        ImageView ivCover, ivAuthorAvatar, icLike;
+        ImageView ivCover, icLike;
+        com.studentforum.app.components.AuthorAvatarView authorAvatarView;
 
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -155,7 +147,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             tvCommentCount = itemView.findViewById(R.id.tvCommentCount);
             tvTime = itemView.findViewById(R.id.tvTime);
             
-            ivAuthorAvatar = itemView.findViewById(R.id.ivAuthorAvatar);
+            authorAvatarView = itemView.findViewById(R.id.authorAvatarView);
             icLike = itemView.findViewById(R.id.icLike);
         }
     }

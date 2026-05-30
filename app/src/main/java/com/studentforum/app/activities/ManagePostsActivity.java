@@ -40,6 +40,6 @@ public class ManagePostsActivity extends AppCompatActivity {
         postViewModel.getError().observe(this, err -> Toast.makeText(this, err, Toast.LENGTH_SHORT).show());
 
         // Gọi API lấy bài viết của chính mình
-        postViewModel.fetchMyPosts("me");
+        postViewModel.fetchMyPosts("me", true);
     }
 }

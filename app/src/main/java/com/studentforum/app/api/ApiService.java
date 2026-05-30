@@ -54,7 +54,7 @@ public interface ApiService {
 
     // --- 5. PERSONAL / MANAGE POSTS ---
     @GET("posts")
-    Call<PostResponse> getMyPosts(@Query("authorId") String authorId);
+    Call<PostResponse> getMyPosts(@Query("authorId") String authorId, @Query("myPosts") boolean myPosts, @Query("status") String status);
 
     // --- 6. TOPICS ---
     @GET("topics")
@@ -93,9 +93,16 @@ public interface ApiService {
     @GET("users/me")
     Call<User> getMyProfile();
 
-    @PUT("users/me")
-    Call<User> updateProfile(@Body Map<String, String> profileData);
+    @Multipart
+    @PUT("users/profile")
+    Call<User> updateProfile(
+        @Part("name") okhttp3.RequestBody name,
+        @Part okhttp3.MultipartBody.Part avatar
+    );
 
     @PUT("users/me/password")
     Call<ResponseBody> changePassword(@Body Map<String, String> passwordData);
+
+    @GET("users/{id}")
+    Call<User> getUserProfile(@Path("id") String userId);
 }
