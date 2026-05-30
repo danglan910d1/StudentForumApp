@@ -139,6 +139,26 @@ public class ProfileActivity extends BaseActivity {
             public void onLikeClick(Post post, int position) {
                 // Do nothing for now
             }
+            
+            @Override
+            public void onTopicClick(com.studentforum.app.models.Topic topic) {
+                Intent intent = new Intent(ProfileActivity.this, HomeActivity.class);
+                intent.putExtra("FILTER_TYPE", "TOPIC");
+                intent.putExtra("FILTER_ID", topic.getId());
+                intent.putExtra("FILTER_NAME", topic.getName());
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onTagClick(com.studentforum.app.models.Tag tag) {
+                Intent intent = new Intent(ProfileActivity.this, HomeActivity.class);
+                intent.putExtra("FILTER_TYPE", "TAG");
+                intent.putExtra("FILTER_ID", tag.getId());
+                intent.putExtra("FILTER_NAME", tag.getName());
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+            }
         });
         binding.rvPosts.setLayoutManager(new LinearLayoutManager(this));
         binding.rvPosts.setAdapter(postAdapter);

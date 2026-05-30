@@ -22,12 +22,12 @@ public class PostResponse {
 
     public static class Identity {
         @SerializedName("topic")
-        private Topic topic;
+        private String topic;
         @SerializedName("tag")
-        private Tag tag;
+        private String tag;
 
-        public Topic getTopic() { return topic; }
-        public Tag getTag() { return tag; }
+        public String getTopic() { return topic; }
+        public String getTag() { return tag; }
     }
 
     public static class Pagination {

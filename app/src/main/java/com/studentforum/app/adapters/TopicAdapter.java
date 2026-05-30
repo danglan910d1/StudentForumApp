@@ -56,18 +56,25 @@ public class TopicAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     class TopicSectionViewHolder extends RecyclerView.ViewHolder {
         TextView tvTopicSectionName;
         TextView tvTopicTagCount;
-        RecyclerView rvTags;
+        androidx.viewpager2.widget.ViewPager2 vpTags;
         View headerView; // Assuming we can make the header clickable
+        
+        View layoutPagination;
+        TextView tvPageInfo;
+        View btnPrevPage;
+        View btnNextPage;
 
         public TopicSectionViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTopicSectionName = itemView.findViewById(R.id.tvTopicSectionName);
             tvTopicTagCount = itemView.findViewById(R.id.tvTopicTagCount);
-            rvTags = itemView.findViewById(R.id.rvTags);
+            vpTags = itemView.findViewById(R.id.vpTags);
             headerView = itemView.findViewById(R.id.llHeader); // Will check xml to ensure this ID exists
             
-            // Setup grid for tags
-            rvTags.setLayoutManager(new GridLayoutManager(itemView.getContext(), 2));
+            layoutPagination = itemView.findViewById(R.id.layoutPagination);
+            tvPageInfo = itemView.findViewById(R.id.tvPageInfo);
+            btnPrevPage = itemView.findViewById(R.id.btnPrevPage);
+            btnNextPage = itemView.findViewById(R.id.btnNextPage);
         }
 
         public void bind(TopicWithTags topicWithTags) {
@@ -88,13 +95,46 @@ public class TopicAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 });
             }
             
-            TopicTagAdapter tagAdapter = new TopicTagAdapter(tag -> {
+            TagPagerAdapter tagAdapter = new TagPagerAdapter(topicWithTags.getTags(), tag -> {
                 if (listener != null) {
                     listener.onTagClick(tag);
                 }
             });
-            tagAdapter.setTags(topicWithTags.getTags());
-            rvTags.setAdapter(tagAdapter);
+            vpTags.setAdapter(tagAdapter);
+            
+            int totalPages = tagAdapter.getPagesCount();
+            if (totalPages <= 1) {
+                if (layoutPagination != null) layoutPagination.setVisibility(View.GONE);
+            } else {
+                if (layoutPagination != null) layoutPagination.setVisibility(View.VISIBLE);
+                updatePaginationInfo(vpTags.getCurrentItem(), totalPages);
+                
+                if (btnPrevPage != null) {
+                    btnPrevPage.setOnClickListener(v -> {
+                        int current = vpTags.getCurrentItem();
+                        if (current > 0) vpTags.setCurrentItem(current - 1);
+                    });
+                }
+                if (btnNextPage != null) {
+                    btnNextPage.setOnClickListener(v -> {
+                        int current = vpTags.getCurrentItem();
+                        if (current < totalPages - 1) vpTags.setCurrentItem(current + 1);
+                    });
+                }
+                
+                vpTags.registerOnPageChangeCallback(new androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+                    @Override
+                    public void onPageSelected(int position) {
+                        updatePaginationInfo(position, totalPages);
+                    }
+                });
+            }
+        }
+        
+        private void updatePaginationInfo(int current, int total) {
+            if (tvPageInfo != null) {
+                tvPageInfo.setText((current + 1) + " / " + total);
+            }
         }
     }
 }

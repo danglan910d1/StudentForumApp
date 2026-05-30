@@ -153,6 +153,11 @@ public class PostDetailActivity extends AppCompatActivity implements CommentItem
         binding.tvTitle.setText(post.getTitle());
 
         if (post.getTopic() != null) binding.tvCategory.setText(post.getTopic().getName());
+        if ("rejected".equals(post.getStatus())) {
+            binding.tvStatusRejected.setVisibility(View.VISIBLE);
+        } else {
+            binding.tvStatusRejected.setVisibility(View.GONE);
+        }
         if (post.getAuthor() != null) binding.tvAuthorName.setText(post.getAuthor().getName());
         binding.tvTime.setText(AppUtils.getTimeAgo(post.getCreatedAt()));
         binding.tvDate.setText("Đã đăng vào " + AppUtils.formatDate(post.getCreatedAt()));

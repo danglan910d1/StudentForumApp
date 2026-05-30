@@ -44,6 +44,15 @@ public class HomeActivity extends BaseActivity {
         setupDrawer(R.id.nav_home);
         setupFooter(R.id.nav_home);
 
+        // Setup Notification Bell
+        View btnNoti = findViewById(R.id.btnNoti);
+        if (btnNoti != null) {
+            btnNoti.setOnClickListener(v -> {
+                startActivity(new Intent(HomeActivity.this, NotificationActivity.class));
+            });
+        }
+
+
         ApiService apiService = ApiClient.getClient(authManager).create(ApiService.class);
 
         ViewModelFactory factory = new ViewModelFactory(apiService);
@@ -106,6 +115,24 @@ public class HomeActivity extends BaseActivity {
                         );
                     }
                 });
+            }
+
+            @Override
+            public void onTopicClick(com.studentforum.app.models.Topic topic) {
+                Intent intent = new Intent(HomeActivity.this, HomeActivity.class);
+                intent.putExtra("FILTER_TYPE", "TOPIC");
+                intent.putExtra("FILTER_ID", topic.getId());
+                intent.putExtra("FILTER_NAME", topic.getName());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onTagClick(com.studentforum.app.models.Tag tag) {
+                Intent intent = new Intent(HomeActivity.this, HomeActivity.class);
+                intent.putExtra("FILTER_TYPE", "TAG");
+                intent.putExtra("FILTER_ID", tag.getId());
+                intent.putExtra("FILTER_NAME", tag.getName());
+                startActivity(intent);
             }
         });
 
@@ -205,6 +232,33 @@ public class HomeActivity extends BaseActivity {
             postViewModel.clearCache();
             postViewModel.fetchFeed(currentPage);
         }
+        loadUnreadCount();
+    }
+
+    private void loadUnreadCount() {
+        ApiService apiService = ApiClient.getClient(authManager).create(ApiService.class);
+        apiService.getNotifications(1, 1).enqueue(new retrofit2.Callback<com.studentforum.app.models.responses.NotificationResponse>() {
+            @Override
+            public void onResponse(retrofit2.Call<com.studentforum.app.models.responses.NotificationResponse> call, retrofit2.Response<com.studentforum.app.models.responses.NotificationResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    int count = response.body().getUnreadCount();
+                    TextView tvNotiBadge = findViewById(R.id.tvNotiBadge);
+                    if (tvNotiBadge != null) {
+                        if (count > 0) {
+                            tvNotiBadge.setVisibility(View.VISIBLE);
+                            tvNotiBadge.setText(count > 99 ? "99+" : String.valueOf(count));
+                        } else {
+                            tvNotiBadge.setVisibility(View.GONE);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<com.studentforum.app.models.responses.NotificationResponse> call, Throwable t) {
+                // Ignore failure
+            }
+        });
     }
     
     private void renderPagination() {

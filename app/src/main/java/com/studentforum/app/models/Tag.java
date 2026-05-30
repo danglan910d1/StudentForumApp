@@ -14,8 +14,12 @@ public class Tag implements Serializable {
     @SerializedName("topic")
     private Topic topic;
 
+    @SerializedName("postCount")
+    private int postCount;
+
     public String getId() { return id; }
     public String getName() { return name; }
     public String getSlug() { return slug; }
     public Topic getTopic() { return topic; }
+    public int getPostCount() { return postCount; }
 }

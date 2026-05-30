@@ -21,6 +21,11 @@ public class PostViewModel extends ViewModel {
     private String query = "";
     private String topicSlug = null;
     private String tagSlug = null;
+    private String topicId = null;
+    private String tagId = null;
+
+    private final MutableLiveData<String> filterType = new MutableLiveData<>(null);
+    private final MutableLiveData<String> filterName = new MutableLiveData<>(null);
 
     private static final java.util.Map<String, com.studentforum.app.models.responses.PostResponse> listCache = new java.util.HashMap<>();
 
@@ -76,9 +81,34 @@ public class PostViewModel extends ViewModel {
     public LiveData<String> getError() { return error; }
     public LiveData<Boolean> getLoading() { return loading; }
     public LiveData<com.studentforum.app.models.responses.PostResponse.Pagination> getPagination() { return pagination; }
+    public LiveData<String> getFilterType() { return filterType; }
+    public LiveData<String> getFilterName() { return filterName; }
+
+    public void loadPostsByFilter(String type, String id, String name) {
+        this.topicSlug = null;
+        this.tagSlug = null;
+        this.topicId = null;
+        this.tagId = null;
+        this.query = null;
+        
+        if (type != null && id != null) {
+            if (type.equals("TOPIC")) {
+                this.topicId = id;
+            } else if (type.equals("TAG")) {
+                this.tagId = id;
+            }
+            this.filterName.setValue(name);
+            this.filterType.setValue(type);
+        } else {
+            this.filterName.setValue(null);
+            this.filterType.setValue(null);
+        }
+        clearCache();
+        fetchFeed(1);
+    }
 
     public void fetchFeed(int page) {
-        String cacheKey = "feed_" + page + "_" + (query != null ? query : "") + "_" + (topicSlug != null ? topicSlug : "") + "_" + (tagSlug != null ? tagSlug : "");
+        String cacheKey = "feed_" + page + "_" + (query != null ? query : "") + "_" + (topicSlug != null ? topicSlug : "") + "_" + (tagSlug != null ? tagSlug : "") + "_" + (topicId != null ? topicId : "") + "_" + (tagId != null ? tagId : "");
         if (listCache.containsKey(cacheKey)) {
             com.studentforum.app.models.responses.PostResponse cachedResponse = listCache.get(cacheKey);
             posts.setValue(cachedResponse.getPosts());
@@ -87,7 +117,7 @@ public class PostViewModel extends ViewModel {
         }
 
         loading.setValue(true);
-        apiService.getPosts(page, 5, query, topicSlug, tagSlug).enqueue(new Callback<com.studentforum.app.models.responses.PostResponse>() {
+        apiService.getPosts(page, 5, query, topicSlug, tagSlug, topicId, tagId).enqueue(new Callback<com.studentforum.app.models.responses.PostResponse>() {
             @Override
             public void onResponse(Call<com.studentforum.app.models.responses.PostResponse> call, Response<com.studentforum.app.models.responses.PostResponse> response) {
                 loading.setValue(false);

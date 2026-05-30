@@ -61,7 +61,7 @@ public class CreateEditPostViewModel extends ViewModel {
     }
 
     public void fetchTopics() {
-        apiService.getTopics().enqueue(new Callback<TopicResponse>() {
+        apiService.getTopics(100).enqueue(new Callback<TopicResponse>() {
             @Override
             public void onResponse(Call<TopicResponse> call, Response<TopicResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -79,7 +79,7 @@ public class CreateEditPostViewModel extends ViewModel {
     }
 
     public void fetchTags(String topicId) {
-        apiService.getTags(topicId).enqueue(new Callback<TagResponse>() {
+        apiService.getTags(topicId, 100).enqueue(new Callback<TagResponse>() {
             @Override
             public void onResponse(Call<TagResponse> call, Response<TagResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {

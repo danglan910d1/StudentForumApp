@@ -64,7 +64,7 @@ public class TopicActivity extends BaseActivity implements TopicAdapter.OnTopicI
     private void loadTopicsAndTags() {
         ApiService apiService = ApiClient.getClient(authManager).create(ApiService.class);
         
-        apiService.getTopics().enqueue(new Callback<TopicResponse>() {
+        apiService.getTopics(100).enqueue(new Callback<TopicResponse>() {
             @Override
             public void onResponse(Call<TopicResponse> call, Response<TopicResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -87,7 +87,7 @@ public class TopicActivity extends BaseActivity implements TopicAdapter.OnTopicI
     private void fetchTagsAndMerge(ApiService apiService, List<Topic> topics) {
         // Assume getTags() without topicId returns all tags, or we can just fetch tags if backend supports it.
         // Actually since we don't have an getAllTags endpoint defined, we fetch all tags with topicId null
-        apiService.getTags(null).enqueue(new Callback<com.studentforum.app.models.responses.TagResponse>() {
+        apiService.getTags(null, 100).enqueue(new Callback<com.studentforum.app.models.responses.TagResponse>() {
             @Override
             public void onResponse(Call<com.studentforum.app.models.responses.TagResponse> call, Response<com.studentforum.app.models.responses.TagResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -116,6 +116,13 @@ public class TopicActivity extends BaseActivity implements TopicAdapter.OnTopicI
                 }
             }
             if (!twt.getTags().isEmpty()) {
+                // Sắp xếp Tags theo postCount giảm dần (Trending Tags)
+                java.util.Collections.sort(twt.getTags(), new java.util.Comparator<com.studentforum.app.models.Tag>() {
+                    @Override
+                    public int compare(com.studentforum.app.models.Tag t1, com.studentforum.app.models.Tag t2) {
+                        return Integer.compare(t2.getPostCount(), t1.getPostCount());
+                    }
+                });
                 mergedList.add(twt);
             }
         }
@@ -146,14 +153,20 @@ public class TopicActivity extends BaseActivity implements TopicAdapter.OnTopicI
     @Override
     public void onTagClick(com.studentforum.app.models.Tag tag) {
         Intent intent = new Intent(this, HomeActivity.class);
-        intent.putExtra("TAG_SLUG", tag.getSlug());
+        intent.putExtra("FILTER_TYPE", "TAG");
+        intent.putExtra("FILTER_ID", tag.getId());
+        intent.putExtra("FILTER_NAME", tag.getName());
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
     }
 
     @Override
     public void onTopicClick(com.studentforum.app.models.TopicWithTags topic) {
         Intent intent = new Intent(this, HomeActivity.class);
-        intent.putExtra("TOPIC_SLUG", topic.getTopic().getSlug());
+        intent.putExtra("FILTER_TYPE", "TOPIC");
+        intent.putExtra("FILTER_ID", topic.getTopic().getId());
+        intent.putExtra("FILTER_NAME", topic.getTopic().getName());
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(intent);
     }
 }

@@ -74,6 +74,12 @@ public class AdminApproveListActivity extends AppCompatActivity {
 
             @Override
             public void onLikeClick(Post post, int position) {}
+            
+            @Override
+            public void onTopicClick(com.studentforum.app.models.Topic topic) {}
+
+            @Override
+            public void onTagClick(com.studentforum.app.models.Tag tag) {}
         });
     }
 

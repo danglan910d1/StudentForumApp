@@ -28,7 +28,9 @@ public interface ApiService {
             @Query("limit") Integer limit,
             @Query("search") String query,
             @Query("topicSlug") String topicSlug,
-            @Query("tagSlug") String tagSlug
+            @Query("tagSlug") String tagSlug,
+            @Query("topicId") String topicId,
+            @Query("tagId") String tagId
     );
 
     @GET("posts/{id}")
@@ -64,14 +66,20 @@ public interface ApiService {
 
     // --- 6. TOPICS ---
     @GET("topics")
-    Call<TopicResponse> getTopics();
+    Call<TopicResponse> getTopics(@Query("limit") int limit);
 
     @GET("tags")
-    Call<TagResponse> getTags(@Query("topicId") String topicId);
+    Call<TagResponse> getTags(@Query("topicId") String topicId, @Query("limit") int limit);
 
     // --- 7. NOTIFICATIONS ---
     @GET("notifications")
-    Call<List<Notification>> getNotifications();
+    Call<com.studentforum.app.models.responses.NotificationResponse> getNotifications(
+        @Query("page") int page,
+        @Query("limit") int limit
+    );
+
+    @PATCH("notifications/{id}/read")
+    Call<ResponseBody> markNotificationAsRead(@Path("id") String id);
 
     // --- 8. LIKES & COMMENTS ---
     @POST("likes/post/{id}")

@@ -25,6 +25,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         void onPostClick(Post post);
         void onAuthorClick(Post post);
         void onLikeClick(Post post, int position);
+        void onTopicClick(com.studentforum.app.models.Topic topic);
+        void onTagClick(com.studentforum.app.models.Tag tag);
     }
 
     public PostAdapter(Context context) {
@@ -85,9 +87,21 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         if (post.getTopic() != null) {
             holder.tvCategory.setText(post.getTopic().getName());
             holder.tvCategory.setVisibility(View.VISIBLE);
+            holder.tvCategory.setOnClickListener(v -> {
+                if (listener != null) listener.onTopicClick(post.getTopic());
+            });
         } else {
             holder.tvCategory.setVisibility(View.GONE);
+            holder.tvCategory.setOnClickListener(null);
         }
+        
+        if (post.getTags() != null && !post.getTags().isEmpty()) {
+            holder.rvTags.setVisibility(View.VISIBLE);
+            holder.tagAdapter.setTags(post.getTags());
+        } else {
+            holder.rvTags.setVisibility(View.GONE);
+        }
+        
         holder.authorAvatarView.setAuthor(post.getAuthor());
         if (post.getAuthor() != null) {
             holder.tvAuthorName.setText(post.getAuthor().getName());
@@ -132,10 +146,12 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         return postList.size();
     }
 
-    public static class PostViewHolder extends RecyclerView.ViewHolder {
+    public class PostViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvContent, tvCategory, tvAuthorName, tvLikeCount, tvCommentCount, tvTime;
         ImageView ivCover, icLike;
         com.studentforum.app.components.AuthorAvatarView authorAvatarView;
+        RecyclerView rvTags;
+        PostTagAdapter tagAdapter;
 
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -149,6 +165,15 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             
             authorAvatarView = itemView.findViewById(R.id.authorAvatarView);
             icLike = itemView.findViewById(R.id.icLike);
+            
+            rvTags = itemView.findViewById(R.id.rvTags);
+            rvTags.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(context, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false));
+            tagAdapter = new PostTagAdapter(tag -> {
+                if (listener != null) {
+                    listener.onTagClick(tag);
+                }
+            });
+            rvTags.setAdapter(tagAdapter);
         }
     }
 }

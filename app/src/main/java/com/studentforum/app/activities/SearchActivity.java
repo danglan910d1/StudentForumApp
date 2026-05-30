@@ -98,7 +98,7 @@ public class SearchActivity extends AppCompatActivity {
         postViewModel.setQuery(null);
 
         // 2. Load real Hot Topics
-        apiService.getTopics().enqueue(new retrofit2.Callback<TopicResponse>() {
+        apiService.getTopics(100).enqueue(new retrofit2.Callback<TopicResponse>() {
             @Override
             public void onResponse(retrofit2.Call<TopicResponse> call, retrofit2.Response<TopicResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
