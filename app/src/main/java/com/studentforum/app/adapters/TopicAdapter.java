@@ -23,6 +23,7 @@ public class TopicAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     public interface OnTopicItemClickListener {
         void onTagClick(Tag tag);
+        void onTopicClick(TopicWithTags topic);
     }
 
     public TopicAdapter(OnTopicItemClickListener listener) {
@@ -56,12 +57,15 @@ public class TopicAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         TextView tvTopicSectionName;
         TextView tvTopicTagCount;
         RecyclerView rvTags;
+        View headerView; // Assuming we can make the header clickable
 
         public TopicSectionViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTopicSectionName = itemView.findViewById(R.id.tvTopicSectionName);
             tvTopicTagCount = itemView.findViewById(R.id.tvTopicTagCount);
             rvTags = itemView.findViewById(R.id.rvTags);
+            headerView = itemView.findViewById(R.id.llHeader); // Will check xml to ensure this ID exists
+            
             // Setup grid for tags
             rvTags.setLayoutManager(new GridLayoutManager(itemView.getContext(), 2));
         }
@@ -69,6 +73,20 @@ public class TopicAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         public void bind(TopicWithTags topicWithTags) {
             tvTopicSectionName.setText(topicWithTags.getTopic().getName());
             tvTopicTagCount.setText(String.valueOf(topicWithTags.getTags().size()));
+            
+            if (headerView != null) {
+                headerView.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onTopicClick(topicWithTags);
+                    }
+                });
+            } else {
+                tvTopicSectionName.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onTopicClick(topicWithTags);
+                    }
+                });
+            }
             
             TopicTagAdapter tagAdapter = new TopicTagAdapter(tag -> {
                 if (listener != null) {

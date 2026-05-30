@@ -221,7 +221,14 @@ public class ProfileActivity extends BaseActivity {
 
         binding.tvName.setText(profile.getName());
         binding.tvEmail.setText(profile.getEmail() != null ? profile.getEmail() : "Không có email");
-        
+
+        if (binding.tvTrustScore != null) {
+            binding.tvTrustScore.setText(String.format("%.1f", profile.getTrustScore()));
+        }
+        if (binding.tvLikeCount != null) {
+            binding.tvLikeCount.setText(String.valueOf(profile.getLikeCount()));
+        }
+
         /* // Removed these from XML design for now
         // Match FE role logic
         if ("admin".equals(profile.getRole())) {

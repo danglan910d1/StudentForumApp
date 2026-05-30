@@ -77,12 +77,13 @@ public abstract class BaseActivity extends AppCompatActivity {
                 if (this instanceof ProfileActivity) {
                     String currentUserId = getIntent().getStringExtra("USER_ID");
                     if (authManager.getUserId().equals(currentUserId)) {
-                        return true;
+                        return true; // Already on my profile
                     }
                 }
                 Intent intent = new Intent(this, ProfileActivity.class);
                 intent.putExtra("USER_ID", authManager.getUserId());
                 startActivity(intent);
+                if (!(this instanceof HomeActivity)) finish();
                 return true;
             }
             if (id == currentNavId) {
@@ -90,8 +91,10 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
             if (id == R.id.nav_home) {
                 startActivity(new Intent(this, HomeActivity.class));
+                finish();
             } else if (id == R.id.nav_topics) {
                 startActivity(new Intent(this, TopicActivity.class));
+                finish();
             }
             return true;
         });
@@ -109,6 +112,19 @@ public abstract class BaseActivity extends AppCompatActivity {
         bottomNav.setSelectedItemId(currentNavId);
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
+            if (itemId == R.id.nav_profile) {
+                if (this instanceof ProfileActivity) {
+                    String currentUserId = getIntent().getStringExtra("USER_ID");
+                    if (authManager.getUserId().equals(currentUserId)) {
+                        return true; // Already on my profile
+                    }
+                }
+                Intent intent = new Intent(this, ProfileActivity.class);
+                intent.putExtra("USER_ID", authManager.getUserId());
+                startActivity(intent);
+                if (!(this instanceof HomeActivity)) finish();
+                return true;
+            }
             if (itemId == currentNavId) {
                 return true;
             }
@@ -120,12 +136,6 @@ public abstract class BaseActivity extends AppCompatActivity {
                 return true;
             } else if (itemId == R.id.nav_topics) {
                 Intent intent = new Intent(this, TopicActivity.class);
-                startActivity(intent);
-                finish();
-                return true;
-            } else if (itemId == R.id.nav_profile) {
-                Intent intent = new Intent(this, ProfileActivity.class);
-                intent.putExtra("USER_ID", authManager.getUserId());
                 startActivity(intent);
                 finish();
                 return true;

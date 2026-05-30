@@ -49,6 +49,13 @@ public class HomeActivity extends BaseActivity {
         ViewModelFactory factory = new ViewModelFactory(apiService);
         postViewModel = new ViewModelProvider(this, factory).get(PostViewModel.class);
 
+        if (getIntent().hasExtra("TOPIC_SLUG")) {
+            postViewModel.setTopicSlug(getIntent().getStringExtra("TOPIC_SLUG"));
+        }
+        if (getIntent().hasExtra("TAG_SLUG")) {
+            postViewModel.setTagSlug(getIntent().getStringExtra("TAG_SLUG"));
+        }
+
         RecyclerView rvPosts = findViewById(R.id.rvPosts);
         rvPosts.setLayoutManager(new LinearLayoutManager(this));
         rvPosts.setItemAnimator(null);

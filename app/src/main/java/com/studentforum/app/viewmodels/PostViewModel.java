@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 import com.studentforum.app.api.ApiService;
 import com.studentforum.app.models.Post;
 import com.studentforum.app.models.responses.PostResponse;
+import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -13,9 +14,19 @@ import retrofit2.Response;
 
 public class PostViewModel extends ViewModel {
     private final ApiService apiService;
-    private final MutableLiveData<List<Post>> posts = new MutableLiveData<>();
+    private final MutableLiveData<List<Post>> posts = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<String> error = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> loading = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> loading = new MutableLiveData<>(false);
+
+    private String query = "";
+    private String topicSlug = null;
+    private String tagSlug = null;
+
+    private static final java.util.Map<String, com.studentforum.app.models.responses.PostResponse> listCache = new java.util.HashMap<>();
+
+    public void clearCache() {
+        listCache.clear();
+    }
 
     public static class PostLikeEvent {
         public final String postId;
@@ -46,6 +57,19 @@ public class PostViewModel extends ViewModel {
         this.apiService = apiService;
     }
 
+    public void setQuery(String query) {
+        this.query = query;
+        fetchFeed(1);
+    }
+
+    public void setTopicSlug(String topicSlug) {
+        this.topicSlug = topicSlug;
+    }
+
+    public void setTagSlug(String tagSlug) {
+        this.tagSlug = tagSlug;
+    }
+
     private final MutableLiveData<com.studentforum.app.models.responses.PostResponse.Pagination> pagination = new MutableLiveData<>();
 
     public LiveData<List<Post>> getPosts() { return posts; }
@@ -54,17 +78,7 @@ public class PostViewModel extends ViewModel {
     public LiveData<com.studentforum.app.models.responses.PostResponse.Pagination> getPagination() { return pagination; }
 
     public void fetchFeed(int page) {
-        fetchFeed(page, null);
-    }
-
-    private static final java.util.Map<String, com.studentforum.app.models.responses.PostResponse> listCache = new java.util.HashMap<>();
-
-    public void clearCache() {
-        listCache.clear();
-    }
-
-    public void fetchFeed(int page, String query) {
-        String cacheKey = "feed_" + page + "_" + (query != null ? query : "");
+        String cacheKey = "feed_" + page + "_" + (query != null ? query : "") + "_" + (topicSlug != null ? topicSlug : "") + "_" + (tagSlug != null ? tagSlug : "");
         if (listCache.containsKey(cacheKey)) {
             com.studentforum.app.models.responses.PostResponse cachedResponse = listCache.get(cacheKey);
             posts.setValue(cachedResponse.getPosts());
@@ -73,7 +87,7 @@ public class PostViewModel extends ViewModel {
         }
 
         loading.setValue(true);
-        apiService.getPosts(page, 5, query).enqueue(new Callback<com.studentforum.app.models.responses.PostResponse>() {
+        apiService.getPosts(page, 5, query, topicSlug, tagSlug).enqueue(new Callback<com.studentforum.app.models.responses.PostResponse>() {
             @Override
             public void onResponse(Call<com.studentforum.app.models.responses.PostResponse> call, Response<com.studentforum.app.models.responses.PostResponse> response) {
                 loading.setValue(false);
@@ -87,7 +101,7 @@ public class PostViewModel extends ViewModel {
             }
 
             @Override
-            public void onFailure(Call<PostResponse> call, Throwable t) {
+            public void onFailure(Call<com.studentforum.app.models.responses.PostResponse> call, Throwable t) {
                 loading.setValue(false);
                 error.setValue("Lỗi mạng: " + t.getMessage());
             }

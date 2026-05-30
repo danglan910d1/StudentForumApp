@@ -145,9 +145,15 @@ public class TopicActivity extends BaseActivity implements TopicAdapter.OnTopicI
 
     @Override
     public void onTagClick(com.studentforum.app.models.Tag tag) {
-        // Handle tag click.
-        Intent intent = new Intent(this, SearchActivity.class);
-        intent.putExtra("SEARCH_QUERY", tag.getName());
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.putExtra("TAG_SLUG", tag.getSlug());
+        startActivity(intent);
+    }
+
+    @Override
+    public void onTopicClick(com.studentforum.app.models.TopicWithTags topic) {
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.putExtra("TOPIC_SLUG", topic.getTopic().getSlug());
         startActivity(intent);
     }
 }

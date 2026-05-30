@@ -23,7 +23,13 @@ public interface ApiService {
 
     // --- 2. POSTS (Public & Feed) ---
     @GET("posts")
-    Call<PostResponse> getPosts(@Query("page") Integer page, @Query("limit") Integer limit, @Query("search") String query);
+    Call<PostResponse> getPosts(
+            @Query("page") Integer page,
+            @Query("limit") Integer limit,
+            @Query("search") String query,
+            @Query("topicSlug") String topicSlug,
+            @Query("tagSlug") String tagSlug
+    );
 
     @GET("posts/{id}")
     Call<Post> getPostDetail(@Path("id") String id);

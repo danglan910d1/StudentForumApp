@@ -72,11 +72,11 @@ public class SearchActivity extends AppCompatActivity {
                 if (s.length() > 0) {
                     btnClear.setVisibility(View.VISIBLE);
                     // Call search API when user types
-                    postViewModel.fetchFeed(1, s.toString());
+                    postViewModel.setQuery(s.toString());
                 } else {
                     btnClear.setVisibility(View.GONE);
                     // Khi xóa trắng tìm kiếm, tải lại danh sách cơ bản
-                    postViewModel.fetchFeed(1, null);
+                    postViewModel.setQuery(null);
                 }
             }
 
@@ -95,7 +95,7 @@ public class SearchActivity extends AppCompatActivity {
         // Xóa block layoutLoading do không tồn tại id này trong layout
 
         // 1. Fetch some basic posts
-        postViewModel.fetchFeed(1, null);
+        postViewModel.setQuery(null);
 
         // 2. Load real Hot Topics
         apiService.getTopics().enqueue(new retrofit2.Callback<TopicResponse>() {

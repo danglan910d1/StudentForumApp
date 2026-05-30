@@ -10,11 +10,14 @@ public class Topic implements Serializable {
     private String name;
     @SerializedName("description")
     private String description;
+    @SerializedName("slug")
+    private String slug;
     @SerializedName("post_count")
     private int postCount;
 
     public String getId() { return id; }
     public String getName() { return name; }
     public String getDescription() { return description; }
+    public String getSlug() { return slug; }
     public int getPostCount() { return postCount; }
 }

@@ -41,6 +41,7 @@
         <activity android:name=".activities.AdminApproveDetailActivity" android:exported="false" />
         <!-- Bạn có thể bổ sung TopicsActivity, ProfileActivity... tương tự dòng trên -->
         <activity android:name=".activities.TopicActivity" android:exported="false" />
+        <activity android:name=".activities.EditProfileActivity" android:exported="false" />
             <activity
             android:name=".activities.ProfileActivity"
             android:exported="false"
