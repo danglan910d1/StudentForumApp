@@ -71,33 +71,10 @@ public class ProfileActivity extends BaseActivity {
 
     private void setupUI() {
         setupDrawer(R.id.nav_profile);
-
-
-        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = binding.getRoot().findViewById(R.id.layoutFooter);
-        if (bottomNav != null) {
-            bottomNav.setOnItemSelectedListener(item -> {
-                int itemId = item.getItemId();
-                if (itemId == R.id.nav_home) {
-                    Intent intent = new Intent(ProfileActivity.this, HomeActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    startActivity(intent);
-                    return false;
-                } else if (itemId == R.id.nav_profile) {
-                    if (currentMode == ProfileMode.MY_PROFILE) return true;
-                    Intent intent = new Intent(ProfileActivity.this, ProfileActivity.class);
-                    intent.putExtra("USER_ID", authManager.getUserId());
-                    startActivity(intent);
-                    finish();
-                    return true;
-                }
-                return false;
-            });
-            
-            if (currentMode == ProfileMode.MY_PROFILE) {
-                bottomNav.setSelectedItemId(R.id.nav_profile);
-            } else {
-                bottomNav.getMenu().setGroupCheckable(0, false, true);
-            }
+        setupFooter(R.id.nav_profile);
+        if (currentMode == ProfileMode.OTHER_PROFILE) {
+            com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = binding.getRoot().findViewById(R.id.layoutFooter);
+            if (bottomNav != null) bottomNav.getMenu().setGroupCheckable(0, false, true);
         }
 
         if (currentMode == ProfileMode.OTHER_PROFILE) {

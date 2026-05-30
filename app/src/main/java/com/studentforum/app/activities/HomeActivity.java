@@ -25,7 +25,7 @@ import com.studentforum.app.viewmodels.PostViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import com.studentforum.app.viewmodels.ViewModelFactory;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends BaseActivity {
     private PostViewModel postViewModel;
     private AuthManager authManager;
     private PostAdapter adapter;
@@ -41,7 +41,8 @@ public class HomeActivity extends AppCompatActivity {
         authManager = new AuthManager(this);
         drawerLayout = findViewById(R.id.drawerLayout);
 
-        setupHeader();
+        setupDrawer(R.id.nav_home);
+        setupFooter(R.id.nav_home);
 
         ApiService apiService = ApiClient.getClient(authManager).create(ApiService.class);
 
@@ -262,82 +263,5 @@ public class HomeActivity extends AppCompatActivity {
             result.add(tagObjMap.get(entries.get(i).getKey()));
         }
         return result;
-    }
-    
-    private void setupHeader() {
-        // Thiết lập Bottom Navigation
-        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
-        if (bottomNav != null) {
-            bottomNav.setSelectedItemId(R.id.nav_home);
-            bottomNav.setOnItemSelectedListener(item -> {
-                int itemId = item.getItemId();
-                if (itemId == R.id.nav_home) {
-                    return true; // Already here
-                } else if (itemId == R.id.nav_profile) {
-                    Intent intent = new Intent(HomeActivity.this, ProfileActivity.class);
-                    intent.putExtra("USER_ID", authManager.getUserId());
-                    startActivity(intent);
-                    return false; // Don't highlight unless we actually switch and kill this activity
-                } else if (itemId == R.id.nav_topics) {
-                    Intent intent = new Intent(HomeActivity.this, TopicActivity.class);
-                    startActivity(intent);
-                    return false;
-                } else if (itemId == R.id.nav_posts) {
-                    // Placeholder cho màn hình Posts
-                    Toast.makeText(HomeActivity.this, "Màn hình Bài viết", Toast.LENGTH_SHORT).show();
-                    return false;
-                }
-                return false;
-            });
-        }
-
-        // Nút Hamburger mở Drawer
-        ImageView btnMenu = findViewById(R.id.btnMenu);
-        btnMenu.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
-
-        NavigationView navView = findViewById(R.id.navView);
-        View headerView = navView.getHeaderView(0);
-        
-        TextView tvDrawerName = headerView.findViewById(R.id.tvDrawerName);
-        TextView tvDrawerEmail = headerView.findViewById(R.id.tvDrawerEmail);
-        ImageView ivDrawerAvatar = headerView.findViewById(R.id.ivDrawerAvatar);
-
-        tvDrawerName.setText(authManager.getName());
-        tvDrawerEmail.setText(authManager.getEmail());
-        
-        String avatarNavUrl = com.studentforum.app.utils.AppUtils.getAssetUrl(authManager.getAvatar());
-        if (!avatarNavUrl.isEmpty()) {
-            com.bumptech.glide.Glide.with(this).load(avatarNavUrl).circleCrop().into(ivDrawerAvatar);
-        } else {
-            ivDrawerAvatar.setImageResource(R.drawable.ic_profile);
-        }
-
-        navView.setNavigationItemSelectedListener(item -> {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        });
-
-        // Nút Search mở SearchActivity
-        View btnSearchHeader = findViewById(R.id.btnSearchHeader);
-        btnSearchHeader.setOnClickListener(v -> {
-            startActivity(new Intent(HomeActivity.this, SearchActivity.class));
-        });
-
-        // Nút Avatar mở PopupMenu
-        ImageView ivUserAvatar = findViewById(R.id.ivUserAvatar);
-        String avatarUrl = com.studentforum.app.utils.AppUtils.getAssetUrl(authManager.getAvatar());
-        if (!avatarUrl.isEmpty()) {
-            com.bumptech.glide.Glide.with(this)
-                    .load(avatarUrl)
-                    .placeholder(R.drawable.ic_profile)
-                    .circleCrop()
-                    .into(ivUserAvatar);
-        } else {
-            ivUserAvatar.setImageResource(R.drawable.ic_profile);
-        }
-        
-        ivUserAvatar.setOnClickListener(v -> {
-            startActivity(new Intent(HomeActivity.this, MenuActivity.class));
-        });
     }
 }

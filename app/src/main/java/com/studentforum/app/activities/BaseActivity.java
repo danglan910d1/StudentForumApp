@@ -101,4 +101,36 @@ public abstract class BaseActivity extends AppCompatActivity {
             drawerLayout.openDrawer(GravityCompat.START);
         });
     }
+
+    protected void setupFooter(int currentNavId) {
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.layoutFooter);
+        if (bottomNav == null) return;
+
+        bottomNav.setSelectedItemId(currentNavId);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == currentNavId) {
+                return true;
+            }
+            if (itemId == R.id.nav_home) {
+                Intent intent = new Intent(this, HomeActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(intent);
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_topics) {
+                Intent intent = new Intent(this, TopicActivity.class);
+                startActivity(intent);
+                finish();
+                return true;
+            } else if (itemId == R.id.nav_profile) {
+                Intent intent = new Intent(this, ProfileActivity.class);
+                intent.putExtra("USER_ID", authManager.getUserId());
+                startActivity(intent);
+                finish();
+                return true;
+            }
+            return false;
+        });
+    }
 }
