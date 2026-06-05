@@ -1,0 +1,1 @@
+{"version":3,"file":"ratelimit.d.ts","sourceRoot":"","sources":["../../src/middleware/ratelimit.ts"],"names":[],"mappings":"AAIA,eAAO,MAAM,WAAW,8IAA6C,CAAC;AAEtE,eAAO,MAAM,aAAa,8IAA8C,CAAC;AAEzE,eAAO,MAAM,cAAc,8IAAiD,CAAC;AAE7E,eAAO,MAAM,gBAAgB,8IAAiD,CAAC"}

@@ -1,0 +1,54 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // File Layout
+    "rootDir": "./src", // nơi đặt code gốc .ts
+    "outDir": "./dist", // nơi chứa file .js sau khi build
+
+    "esModuleInterop": true, // cho phép import/export theo kiểu ESModule
+    // Environment Settings
+    // See also https://aka.ms/tsconfig/module
+    "module": "nodenext",
+    "moduleResolution": "NodeNext",
+    "target": "esnext",
+    "types": ["node"],
+    // Tùy chọn quan trọng: HƯỚNG DẪN TypeScript tìm kiếm file .d.ts
+    "typeRoots": [
+      "./node_modules/@types", // Mặc định: Nơi @types/* được cài đặt
+      "./src/types" // THÊM ĐƯỜNG DẪN NÀY (nơi file express.d.ts được đặt)
+    ],
+    // For nodejs:
+    // "lib": ["esnext"],
+    // "types": ["node"],
+    // and npm install -D @types/node
+    "noImplicitAny": false,
+
+    // Other Outputs
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // Style Options
+    // "noImplicitReturns": true,
+    // "noImplicitOverride": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "noFallthroughCasesInSwitch": true,
+    // "noPropertyAccessFromIndexSignature": true,
+
+    // Recommended Options
+    "strict": true,
+    "jsx": "react-jsx",
+    "verbatimModuleSyntax": false,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

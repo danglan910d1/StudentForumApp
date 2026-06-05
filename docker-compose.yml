@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile
+    container_name: student_forum_backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./back-end/.env # Tự động nạp các biến từ file .env của bạn
+    environment:
+      # Ghi đè biến REDIS_URL để trỏ vào service redis trong Docker network thay vì localhost
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - forum_network
+
+  redis:
+    image: redis:alpine
+    container_name: student_forum_redis
+    ports:
+      - "6379:6379" # Ánh xạ port để bạn có thể xem dữ liệu redis từ máy host nếu cần
+    restart: unless-stopped
+    networks:
+      - forum_network
+
+networks:
+  forum_network:
+    driver: bridge
